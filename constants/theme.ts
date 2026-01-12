@@ -1,53 +1,30 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+import { ThemeColors } from "@/types/theme";
 
-import { Platform } from 'react-native';
+export const DarkColors: ThemeColors = {
+    background: '#1e1e1e',
+    backgroundContainer: '#292929',
+    deleteIcon: '#ae0000',
+    noteBackground: '#191919',
+    noteChecked: '#0fe1f5',
+    onBackground: '#dedede',
+    onBackgroundContainer: '#dedede',
+    onNoteBackground: '#dedede',
+    onPrimary: '#000000',
+    primary: '#0fe1f5',
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+}
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
-};
+export const LightColors: ThemeColors = {
+    background: '#dadada',
+    backgroundContainer: '#c8c8c8',
+    deleteIcon: '#ae0000',
+    // noteBackground: '#c2c2c2ff',
+    noteBackground: '#dadada',
+    noteChecked: '#3cb679',
+    onBackground: '#1b1b1b',
+    onBackgroundContainer: '#000000',
+    onNoteBackground: '#000000',
+    onPrimary: '#e3e3e3',
+    primary: '#1e1e1e',
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+}
