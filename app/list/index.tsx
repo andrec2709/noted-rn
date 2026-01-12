@@ -190,6 +190,7 @@ export default function ListScreen() {
     return (
         <SafeAreaView style={{
             flex: 1,
+            backgroundColor: Colors.background,
         }}>
             <GestureHandlerRootView style={{ flex: 1, marginBottom: ks.height }}>
                 <Animated.ScrollView
@@ -228,15 +229,15 @@ export default function ListScreen() {
                         style={{ flexDirection: 'row', alignItems: 'center', columnGap: 10, marginTop: 20, marginLeft: 15 }}
                         onPress={handleAddItem}
                     >
-                        <Entypo name='plus' size={20} />
-                        <Text style={{ fontSize: 18 }}>{i18n.t('addListItem')}</Text>
+                        <Entypo name='plus' size={20} color={Colors.onBackground}/>
+                        <Text style={{ fontSize: 18, color: Colors.onBackground }}>{i18n.t('addListItem')}</Text>
                     </Pressable>
                     <Pressable
                         style={{ flexDirection: 'row', alignItems: 'center', columnGap: 10, marginTop: 30, marginLeft: 15 }}
                         onPress={() => setIsCheckedItemsOpen(!isCheckedItemsOpen)}
                     >
-                        <Ionicons name={isCheckedItemsOpen ? 'chevron-down' : 'chevron-forward'} size={20} />
-                        <Text style={{ fontSize: 18 }}>{i18n.t('checkedItems', { count: checkedItemCount })}</Text>
+                        <Ionicons name={isCheckedItemsOpen ? 'chevron-down' : 'chevron-forward'} size={20} color={Colors.onBackground} />
+                        <Text style={{ fontSize: 18, color: Colors.onBackground }}>{i18n.t('checkedItems', { count: checkedItemCount })}</Text>
                     </Pressable>
                     {isCheckedItemsOpen && (
                         <Sortable.Grid

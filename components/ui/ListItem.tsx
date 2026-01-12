@@ -5,6 +5,7 @@ import { Keyboard, TextInput, View } from "react-native";
 import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
 import Checkbox from "./Checkbox";
+import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 
 type Props = {
     isChecked: boolean;
@@ -17,6 +18,7 @@ type Props = {
 
 export default function ListItem({ isChecked, content, onDelete, id, onPress, onChangeText }: Props) {
     const { selectedListItem, setSelectedListItem } = useNotes();
+    const { Colors } = useNotedTheme();
     const [checked, setChecked] = useState(isChecked);
 
     const handlePress = () => {
@@ -31,37 +33,38 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
             paddingHorizontal: 10,
             opacity: checked ? .5 : 1
         }}
-        
+
 
         >
             <Sortable.Handle>
-                <DragIcon size={32} style={{ marginTop: 8 }} />
+                <DragIcon size={24} style={{ marginTop: 8 }} color={Colors.onBackground} />
             </Sortable.Handle>
             <Checkbox
                 checkedState={checked}
-                size={32}
+                size={24}
                 style={{
                     marginTop: 8
                 }}
                 onPress={handlePress}
+                color={Colors.onBackground}
+                colorChecked={Colors.onBackground}
             />
             <View
-                style={{ flex: 1, flexDirection: 'row', alignItems: 'center'}}
+                style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
             >
                 <TextInput
                     style={{
-                        color: 'black',
+                        color: Colors.onBackground,
                         flex: 1,
                         fontSize: 18,
                         textDecorationLine: checked ? 'line-through' : 'none',
                     }}
                     defaultValue={content}
-                    placeholderTextColor={'black'}
                     multiline
                     autoFocus={selectedListItem === id}
                     onChangeText={text => onChangeText(text, id)}
                     onFocus={() => setSelectedListItem(id)}
-                    
+
                 />
                 <Ionicons
                     name="close"
@@ -69,7 +72,7 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
                     onPress={() => {
                         onDelete(id, checked);
                     }}
-                    
+                    color={Colors.onBackground}
                     style={{ opacity: selectedListItem === id ? 1 : 0 }}
                     disabled={!(selectedListItem === id)}
 
