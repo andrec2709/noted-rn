@@ -13,4 +13,5 @@ export type ThemeColors = {
     onNoteBackground: ColorValue;
     onPrimary: ColorValue;
     primary: ColorValue;
+    toolbarActive: ColorValue;
 };

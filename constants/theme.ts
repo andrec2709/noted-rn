@@ -11,6 +11,7 @@ export const DarkColors: ThemeColors = {
     onNoteBackground: '#dedede',
     onPrimary: '#000000',
     primary: '#0fe1f5',
+    toolbarActive: '#0fe1f5',
 
 }
 
@@ -26,5 +27,6 @@ export const LightColors: ThemeColors = {
     onNoteBackground: '#000000',
     onPrimary: '#e3e3e3',
     primary: '#1e1e1e',
+    toolbarActive: '#3cb679',
 
 }

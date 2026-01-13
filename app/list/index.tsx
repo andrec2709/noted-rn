@@ -1,6 +1,6 @@
 import 'react-native-get-random-values';
 import ListItem from '@/components/ui/ListItem';
-import { Pressable, Text } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Sortable, { SortableGridRenderItem } from 'react-native-sortables';
 import { GestureHandlerRootView, TextInput } from "react-native-gesture-handler";
@@ -16,6 +16,7 @@ import { useFocusEffect } from 'expo-router';
 import { useKeyboardState } from 'react-native-keyboard-controller';
 import { useNotedTheme } from '@/contexts/NotedThemeProvider';
 import { useLanguage } from '@/contexts/LanguageProvider';
+import HeaderGeneric from '@/components/layout/HeaderGeneric';
 
 
 export default function ListScreen() {
@@ -191,7 +192,9 @@ export default function ListScreen() {
         <SafeAreaView style={{
             flex: 1,
             backgroundColor: Colors.background,
-        }}>
+        }}
+        >
+            <HeaderGeneric />
             <GestureHandlerRootView style={{ flex: 1, marginBottom: ks.height }}>
                 <Animated.ScrollView
                     ref={scrollRef}
@@ -199,12 +202,11 @@ export default function ListScreen() {
                     keyboardShouldPersistTaps='always'
                 >
                     <TextInput
-                        style={{
-                            fontSize: 30,
-                            height: 'auto',
+                        style={[styles.titleInput,
+                        {
                             color: Colors.onBackground,
-                            marginHorizontal: 15
-                        }}
+                        }
+                        ]}
                         placeholder={i18n.t('placeholderTitle')}
                         placeholderTextColor={Colors.onBackground}
                         defaultValue={activeNoteRef.current?.title || ''}
@@ -229,15 +231,15 @@ export default function ListScreen() {
                         style={{ flexDirection: 'row', alignItems: 'center', columnGap: 10, marginTop: 20, marginLeft: 15 }}
                         onPress={handleAddItem}
                     >
-                        <Entypo name='plus' size={20} color={Colors.onBackground}/>
-                        <Text style={{ fontSize: 18, color: Colors.onBackground }}>{i18n.t('addListItem')}</Text>
+                        <Entypo name='plus' size={20} color={Colors.onBackground} />
+                        <Text style={{ fontSize: 18, fontFamily: 'Inter', color: Colors.onBackground }}>{i18n.t('addListItem')}</Text>
                     </Pressable>
                     <Pressable
                         style={{ flexDirection: 'row', alignItems: 'center', columnGap: 10, marginTop: 30, marginLeft: 15 }}
                         onPress={() => setIsCheckedItemsOpen(!isCheckedItemsOpen)}
                     >
                         <Ionicons name={isCheckedItemsOpen ? 'chevron-down' : 'chevron-forward'} size={20} color={Colors.onBackground} />
-                        <Text style={{ fontSize: 18, color: Colors.onBackground }}>{i18n.t('checkedItems', { count: checkedItemCount })}</Text>
+                        <Text style={{ fontSize: 18, fontFamily: 'Inter', color: Colors.onBackground }}>{i18n.t('checkedItems', { count: checkedItemCount })}</Text>
                     </Pressable>
                     {isCheckedItemsOpen && (
                         <Sortable.Grid
@@ -256,3 +258,12 @@ export default function ListScreen() {
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    titleInput: {
+        fontSize: 30,
+        height: 'auto',
+        marginHorizontal: 15,
+        fontFamily: 'Inter'
+    },
+});

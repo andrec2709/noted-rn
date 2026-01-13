@@ -101,7 +101,7 @@ export default function ItemPreview({
             >
                 {
                     isSelecting
-                        ? <Checkbox size={24} checkedState={checked} onPress={handlePress} colorChecked={Colors.onNoteBackground} color={Colors.onNoteBackground} />
+                        ? <Checkbox size={24} checkedState={checked} onPress={handlePress} colorChecked={Colors.noteChecked} color={Colors.onNoteBackground} />
                         : ''
                 }
                 {

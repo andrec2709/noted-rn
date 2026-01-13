@@ -1,7 +1,7 @@
 import { useNotes } from "@/contexts/NotesProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Keyboard, TextInput, View } from "react-native";
+import { Keyboard, StyleSheet, TextInput, View } from "react-native";
 import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
 import Checkbox from "./Checkbox";
@@ -28,37 +28,34 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
     };
 
     return (
-        <View style={{
-            flexDirection: 'row',
-            paddingHorizontal: 10,
-            opacity: checked ? .5 : 1
-        }}
-
-
+        <View
+            style={[
+                styles.itemContainer,
+                { opacity: checked ? .5 : 1 }
+            ]}
         >
-            <Sortable.Handle>
-                <DragIcon size={24} style={{ marginTop: 8 }} color={Colors.onBackground} />
+            <Sortable.Handle style={styles.itemIcon}>
+                <DragIcon size={24} color={Colors.onBackground} />
             </Sortable.Handle>
             <Checkbox
                 checkedState={checked}
                 size={24}
-                style={{
-                    marginTop: 8
-                }}
+                style={[styles.itemIcon]}
                 onPress={handlePress}
                 color={Colors.onBackground}
-                colorChecked={Colors.onBackground}
+                colorChecked={Colors.noteChecked}
             />
             <View
-                style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
+                style={{ flex: 1, flexDirection: 'row', }}
             >
                 <TextInput
-                    style={{
-                        color: Colors.onBackground,
-                        flex: 1,
-                        fontSize: 18,
-                        textDecorationLine: checked ? 'line-through' : 'none',
-                    }}
+                    style={[
+                        styles.itemInput,
+                        {
+                            color: Colors.onBackground,
+                            textDecorationLine: checked ? 'line-through' : 'none',
+                        },
+                    ]}
                     defaultValue={content}
                     multiline
                     autoFocus={selectedListItem === id}
@@ -67,13 +64,13 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
 
                 />
                 <Ionicons
-                    name="close"
+                    name="close-sharp"
                     size={32}
                     onPress={() => {
                         onDelete(id, checked);
                     }}
                     color={Colors.onBackground}
-                    style={{ opacity: selectedListItem === id ? 1 : 0 }}
+                    style={[styles.itemIcon, { opacity: selectedListItem === id ? 1 : 0 }]}
                     disabled={!(selectedListItem === id)}
 
                 />
@@ -81,3 +78,19 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    itemContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 10,
+    },
+    itemIcon: {
+        marginTop: 12,
+        alignSelf: 'flex-start'
+    },
+    itemInput: {
+        flex: 1,
+        fontSize: 18,
+        fontFamily: 'Inter',
+    },
+});

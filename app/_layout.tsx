@@ -57,15 +57,15 @@ export default function RootLayout() {
                       />
                       <Stack.Screen
                         name="note/index"
-                        options={{ title: '' }}
+                        options={{ title: '', headerShown: false }}
                       />
                       <Stack.Screen
                         name="list/index"
-                        options={{ title: '' }}
+                        options={{ title: '', headerShown: false }}
                       />
                       <Stack.Screen 
                         name="settings/index"
-                        options={{ title: '' }}
+                        options={{ title: '', headerShown: false }}
                       />
                     </Stack>
                   </SelectionProvider>
