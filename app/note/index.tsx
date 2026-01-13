@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput } from "react-native";
+import { Pressable, ScrollView, StyleSheet, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EnrichedTextInput } from 'react-native-enriched';
 import type {
@@ -15,7 +15,6 @@ import { useKeyboardState } from 'react-native-keyboard-controller';
 import { useLanguage } from "@/contexts/LanguageProvider";
 import HeaderGeneric from "@/components/layout/HeaderGeneric";
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
-import { Ionicons } from "@expo/vector-icons";
 import H1Icon from "@/components/icons/H1Icon";
 import BoldIcon from "@/components/icons/BoldIcon";
 import UnderlineIcon from "@/components/icons/UnderlineIcon";
@@ -51,7 +50,7 @@ export default function NoteScreen() {
 
     const debouncedHandleChangeText = useMemo(() => debounce(handleChangeText, 500), []);
     useFocusEffect(useCallback(() => { return () => { handleChangeText(); } }, []));
-
+    console.log('Re-rendered, ', activeNoteRef.current?.content.html);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -81,16 +80,24 @@ export default function NoteScreen() {
                 }}
                 style={{ ...styles.input, color: Colors.onBackground }}
                 placeholder={i18n.t('placeholderEditor')}
-                placeholderTextColor={'#00000075'}
+                placeholderTextColor={Colors.onBackground}
                 defaultValue={activeNoteRef.current?.content.html || ''}
                 onChangeText={e => {
                     console.log('onChangeText fired');
-                    if (activeNoteRef.current && activeNoteRef.current.type === 'note') activeNoteRef.current.content.plainText = e.nativeEvent.value;
+                    if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
+                        console.log('setting content.plainText');
+                        activeNoteRef.current.content.plainText = e.nativeEvent.value;
+
+                    }
                     debouncedHandleChangeText();
                 }}
                 onChangeHtml={e => {
                     console.log('onChangeHtml fired');
-                    if (activeNoteRef.current && activeNoteRef.current.type === 'note') activeNoteRef.current.content.html = e.nativeEvent.value;
+                    if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
+                        console.log('setting content.html');
+                        activeNoteRef.current.content.html = e.nativeEvent.value;
+
+                    }
                     debouncedHandleChangeText();
                 }}
             />

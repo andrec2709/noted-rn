@@ -111,7 +111,7 @@ export default function Index() {
 
                         if (newNote) {
                           setActiveNote(newNote);
-                          router.navigate('./lists');
+                          router.navigate('./list');
                         }
                       }}
                     >
@@ -127,7 +127,7 @@ export default function Index() {
                         
                         if (newNote) {
                           setActiveNote(newNote);
-                          router.navigate('./test');
+                          router.navigate('./note');
                         }
                       }}
                     >
