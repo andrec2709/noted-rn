@@ -26,6 +26,7 @@ export default function ListScreen() {
     if (activeNoteRef.current && activeNoteRef.current.type !== 'list') return null;
 
     const [isCheckedItemsOpen, setIsCheckedItemsOpen] = useState(true);
+    const [submitVersion, setSubmitVersion] = useState(0);
     const ks = useKeyboardState();
 
     const [data, setData] = useState(activeNoteRef.current?.content.items);
@@ -41,10 +42,17 @@ export default function ListScreen() {
                 onDelete={handleDeleteItem}
                 onPress={handleChangeState}
                 onChangeText={handleChangeText}
+                onSubmit={() => setSubmitVersion(prev => prev + 1)}
             />
         },
         []
     )
+
+    useEffect(() => { 
+        if (submitVersion > 0) {
+            handleAddItem()
+        } 
+    }, [submitVersion]);
 
     const handleChangeState = (id: string, state: boolean) => {
 

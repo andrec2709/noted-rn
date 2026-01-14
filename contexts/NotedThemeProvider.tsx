@@ -25,8 +25,12 @@ export const useNotedTheme = () => {
 export const NotedThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const prefColorScheme = useColorScheme();
     // const [theme, setTheme] = useState<Theme>(prefColorScheme ?? 'light');
-    const [theme, setTheme] = useState<Theme>('dark');
+    const [theme, setTheme] = useState<Theme>(prefColorScheme ?? 'light');
     const Colors: ThemeColors = theme === 'light' ? LightColors : DarkColors;
+
+    const isTheme = (testTheme: string): testTheme is Theme => {
+        return testTheme === 'light' || testTheme === 'dark';
+    };
 
     useEffect(() => {
         /**
@@ -40,32 +44,33 @@ export const NotedThemeProvider = ({ children }: { children: React.ReactNode }) 
         const defineTheme = async () => {
             try {
                 const storedTheme = await AsyncStorage.getItem('theme');
-                if (storedTheme === 'light' || storedTheme === 'dark') {
+                if (storedTheme && isTheme(storedTheme)) {
                     setTheme(storedTheme);
                     return;
                 }
 
-                await AsyncStorage.setItem('theme', theme);
+                AsyncStorage.setItem('theme', theme);
 
             } catch (e) {
-                console.warn('Could not fetch theme information.', e);                
+                console.warn('Could not fetch theme information.', e);
             }
         };
 
-        // defineTheme();
+        defineTheme();
     }, []);
 
     const changeTheme = async (newTheme: Theme) => {
         try {
             await AsyncStorage.setItem('theme', newTheme);
-            setTheme(newTheme);
         } catch (e) {
             console.warn('Failed to persist theme', e);
+        } finally {
+            setTheme(newTheme);
         }
     };
 
     return (
-        <ThemeContext.Provider value={{theme, changeTheme, Colors}}>
+        <ThemeContext.Provider value={{ theme, changeTheme, Colors }}>
             {children}
         </ThemeContext.Provider>
     );

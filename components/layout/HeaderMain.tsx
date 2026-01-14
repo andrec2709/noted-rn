@@ -105,7 +105,7 @@ export default function HeaderMain() {
                                             { color: Colors.onBackground },
                                         ]}
                                     >
-                                        Notes
+                                        {i18n.t('notes')}
                                     </Text>
                                     <Ionicons
                                         name="search"

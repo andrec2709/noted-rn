@@ -18,6 +18,18 @@ export type Translation = {
         one: string;
         other: string;
     };
+    cancel: string;
+    language: string;
+    languageOptDescription: string;
+    english: string;
+    portuguese: string;
+    theme: string;
+    themeOptDescription: string;
+    darkMode: string;
+    lightMode: string;
+    addNote: string;
+    addList: string;
+    notes: string;
 };
 
 /**

@@ -1,39 +1,40 @@
+import HeaderGeneric from "@/components/layout/HeaderGeneric";
+import SettingWithModal from "@/components/ui/SettingWithModal";
+import { useLanguage } from "@/contexts/LanguageProvider";
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { useState } from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
-    const { Colors, theme, changeTheme } = useNotedTheme();
-    const [modalVisible, setModalVisible] = useState(false);
+    const { Colors, changeTheme } = useNotedTheme();
+    const { i18n, changeLanguage } = useLanguage();
 
     return (
-        <SafeAreaView>
-            <Pressable
-                onPress={() => setModalVisible(true)}
-            >
-                <Text>Theme</Text>
-                <Text>{theme}</Text>
-            </Pressable>
-            <Modal
-                visible={modalVisible}
-                animationType="fade"
-                transparent
-            >
-                <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                    <View style={{ backgroundColor: 'gray', borderRadius: 20, padding: 50, aspectRatio: 1 }}>
-                        <Pressable>
-                            <Text>Dark</Text>
-                        </Pressable>
-                        <Pressable>
-                            <Text>Light</Text>
-                        </Pressable>
-                        <Pressable onPress={() => setModalVisible(false)}>
-                            <Text>cancel</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            </Modal>
+        <SafeAreaView style={[styles.container, {backgroundColor: Colors.background}]} >
+            <HeaderGeneric />
+            <SettingWithModal
+                name={i18n.t('language')}
+                description={i18n.t('languageOptDescription')}
+                opts={[
+                    { value: i18n.t('english'), callback: () => changeLanguage('en') },
+                    { value: i18n.t('portuguese'), callback: () => changeLanguage('pt-BR') },
+                ]}
+            />
+            <SettingWithModal
+                name={i18n.t('theme')}
+                description={i18n.t('themeOptDescription')}
+                opts={[
+                    { value: i18n.t('darkMode'), callback: () => changeTheme('dark') },
+                    { value: i18n.t('lightMode'), callback: () => changeTheme('light') },
+                ]}
+            />
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1
+    }
+});

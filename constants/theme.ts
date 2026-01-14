@@ -12,6 +12,8 @@ export const DarkColors: ThemeColors = {
     onPrimary: '#000000',
     primary: '#0fe1f5',
     toolbarActive: '#0fe1f5',
+    link: '#0099ffff',
+    blockQuoteBorder: '#3b65d8ff',
 
 }
 
@@ -28,5 +30,7 @@ export const LightColors: ThemeColors = {
     onPrimary: '#e3e3e3',
     primary: '#1e1e1e',
     toolbarActive: '#3cb679',
+    link: '#003cffff',
+    blockQuoteBorder: '#3b65d8ff',
 
 }

@@ -16,10 +16,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Sortable, { SortableGridDragEndParams, SortableGridRenderItem } from "react-native-sortables";
 import Svg, { Path } from "react-native-svg";
 import Debugger from "@/components/ui/Debugger";
+import { useLanguage } from "@/contexts/LanguageProvider";
 
 export default function Index() {
   const router = useRouter();
   const { Colors } = useNotedTheme();
+  const { i18n } = useLanguage();
   const scrollRef = useAnimatedRef<Animated.ScrollView>()
   const { notes, reload, setActiveNote } = useNotes();
   const { isSelecting } = useSelection();
@@ -118,7 +120,7 @@ export default function Index() {
                       <ListIcon color={Colors.onPrimary} size={24} />
                       <Text
                         style={[styles.addOptText, { color: Colors.onPrimary }]}
-                      >Add list</Text>
+                      >{i18n.t('addList')}</Text>
                     </Pressable>
                     <Pressable
                       style={[styles.addOpt, { backgroundColor: Colors.primary }]}
@@ -134,7 +136,7 @@ export default function Index() {
                       <NoteIcon color={Colors.onPrimary} size={24} />
                       <Text
                         style={[styles.addOptText, { color: Colors.onPrimary }]}
-                      >Add note</Text>
+                      >{i18n.t('addNote')}</Text>
                     </Pressable>
                   </View>
                 )
@@ -158,7 +160,7 @@ export default function Index() {
             </View>
           )
         }
-        <Debugger />
+        {/* <Debugger /> */}
       </GestureHandlerRootView>
     </SafeAreaView>
   );

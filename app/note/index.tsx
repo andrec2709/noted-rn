@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { EnrichedTextInput } from 'react-native-enriched';
 import type {
     EnrichedTextInputInstance,
+    HtmlStyle,
     OnChangeStateEvent,
 } from 'react-native-enriched';
 import { debounce } from "@/utils";
@@ -21,6 +22,9 @@ import UnderlineIcon from "@/components/icons/UnderlineIcon";
 import ItalicIcon from "@/components/icons/ItalicIcon";
 import FormatClearIcon from "@/components/icons/FormatClearIcon";
 import OrderedListIcon from "@/components/icons/OrderedListIcon";
+import UnorderedListIcon from "@/components/icons/UnorderedListIcon";
+import H2Icon from "@/components/icons/H2Icon";
+import BlockQuoteIcon from "@/components/icons/BlockQuoteIcon";
 
 
 export default function NoteScreen() {
@@ -28,7 +32,40 @@ export default function NoteScreen() {
     const { i18n } = useLanguage();
     const { Colors } = useNotedTheme();
 
+    // const htmlVersion = useRef(0);
+    // const plainVersion = useRef(0);
+    // const titleVersion = useRef(0);
+
+
     if (activeNoteRef.current && activeNoteRef.current.type !== 'note') return null;
+
+    const htmlStyle: HtmlStyle = {
+        h1: {
+            bold: true,
+
+        },
+        h2: {
+            bold: true
+        },
+        ol: {
+            markerColor: Colors.onBackground,
+            markerFontWeight: '600'
+        },
+        ul: {
+            bulletColor: Colors.onBackground,
+        },
+        a: {
+            color: Colors.link
+        },
+        blockquote: {
+            color: Colors.onBackground,
+            borderColor: Colors.blockQuoteBorder,
+            gapWidth: 32
+        },
+    };
+
+    const [htmlValue, setHtmlValue] = useState(activeNoteRef.current?.content.html);
+    const [titleValue, setTitleValue] = useState(activeNoteRef.current?.title);
 
     const ref = useRef<EnrichedTextInputInstance>(null);
     const [stylesState, setStylesState] = useState<OnChangeStateEvent | null>();
@@ -64,7 +101,7 @@ export default function NoteScreen() {
                 }}
                 placeholder={i18n.t('placeholderTitle')}
                 placeholderTextColor={Colors.onBackground}
-                defaultValue={activeNoteRef.current?.title || ''}
+                defaultValue={titleValue}
                 onChangeText={text => {
                     if (activeNoteRef.current && activeNoteRef.current.type === 'note') activeNoteRef.current.title = text;
                     debouncedHandleChangeText();
@@ -74,27 +111,23 @@ export default function NoteScreen() {
             <EnrichedTextInput
                 ref={ref}
                 onChangeState={e => {
-                    console.log('onChangeState fired');
                     setStylesState(e.nativeEvent);
                     debouncedHandleChangeText();
                 }}
                 style={{ ...styles.input, color: Colors.onBackground }}
+                htmlStyle={htmlStyle}
                 placeholder={i18n.t('placeholderEditor')}
                 placeholderTextColor={Colors.onBackground}
-                defaultValue={activeNoteRef.current?.content.html || ''}
+                defaultValue={htmlValue}
                 onChangeText={e => {
-                    console.log('onChangeText fired');
                     if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
-                        console.log('setting content.plainText');
                         activeNoteRef.current.content.plainText = e.nativeEvent.value;
 
                     }
                     debouncedHandleChangeText();
                 }}
                 onChangeHtml={e => {
-                    console.log('onChangeHtml fired');
                     if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
-                        console.log('setting content.html');
                         activeNoteRef.current.content.html = e.nativeEvent.value;
 
                     }
@@ -119,10 +152,17 @@ export default function NoteScreen() {
                 </Pressable>
                 <Pressable
                     style={[
+                        styles.toolbarButton,
+                    ]}
+                    onPress={() => ref.current?.toggleH2()}
+                >
+                    <H2Icon color={stylesState?.isH2 ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
+                </Pressable>
+                <Pressable
+                    style={[
                         styles.toolbarButton
                     ]}
                     onPress={() => ref.current?.toggleBold()}
-                    disabled={stylesState?.isH1}
                 >
                     <BoldIcon color={stylesState?.isBold ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
                 </Pressable>
@@ -162,6 +202,22 @@ export default function NoteScreen() {
                 >
                     <OrderedListIcon color={stylesState?.isOrderedList ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
                 </Pressable>
+                <Pressable
+                    onPress={() => ref.current?.toggleUnorderedList()}
+                    style={[
+                        styles.toolbarButton
+                    ]}
+                >
+                    <UnorderedListIcon color={stylesState?.isUnorderedList ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
+                </Pressable>
+                <Pressable
+                    onPress={() => ref.current?.toggleBlockQuote()}
+                    style={[
+                        styles.toolbarButton
+                    ]}
+                >
+                    <BlockQuoteIcon color={stylesState?.isBlockQuote ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
+                </Pressable>
             </ScrollView>
         </SafeAreaView>
     )
@@ -183,15 +239,13 @@ const styles = StyleSheet.create({
         maxWidth: 500,
         paddingVertical: 5,
         borderRadius: 40,
-        marginBottom: 20,
         alignSelf: 'center',
-        height: 30,
-        maxHeight: 50,
+        maxHeight: 40,
         width: '70%',
     },
     toolbarContent: {
         columnGap: 20,
-        paddingHorizontal: 10
+        paddingHorizontal: 20
     },
     toolbarButton: {
         padding: 10,

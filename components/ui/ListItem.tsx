@@ -14,9 +14,10 @@ type Props = {
     id: string;
     onPress: (id: string, state: boolean) => void;
     onChangeText: (text: string, id: string) => void;
+    onSubmit: (...args: any) => any;
 };
 
-export default function ListItem({ isChecked, content, onDelete, id, onPress, onChangeText }: Props) {
+export default function ListItem({ isChecked, content, onDelete, id, onPress, onChangeText, onSubmit }: Props) {
     const { selectedListItem, setSelectedListItem } = useNotes();
     const { Colors } = useNotedTheme();
     const [checked, setChecked] = useState(isChecked);
@@ -59,8 +60,10 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
                     defaultValue={content}
                     multiline
                     autoFocus={selectedListItem === id}
+                    submitBehavior="submit"
                     onChangeText={text => onChangeText(text, id)}
                     onFocus={() => setSelectedListItem(id)}
+                    onSubmitEditing={onSubmit}
 
                 />
                 <Ionicons
