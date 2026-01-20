@@ -30,6 +30,7 @@ export const translations: Translations = {
         addNote: 'Note',
         addList: 'List',
         notes: 'Notes',
+        list: 'List',
     },
     'pt-BR': {
         placeholderTitle: 'Título',
@@ -57,6 +58,7 @@ export const translations: Translations = {
         addNote: 'Nota',
         addList: 'Lista',
         notes: 'Notas',
+        list: 'Lista',
     },
 };
 

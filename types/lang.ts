@@ -30,6 +30,7 @@ export type Translation = {
     addNote: string;
     addList: string;
     notes: string;
+    list: string;
 };
 
 /**

@@ -86,7 +86,7 @@ export default function HeaderMain() {
                                             await deleteNotes(ids);
                                             setSelectionBuffer([]);
                                         }}
-                                        color={Colors.onBackground}
+                                        color={Colors.deleteIcon}
                                         style={{ marginRight: 20 }}
                                     />
                                     <CancelIcon
@@ -94,7 +94,7 @@ export default function HeaderMain() {
                                             setIsSelecting(false);
                                             setSelectionBuffer([]);
                                         }}
-                                        color={Colors.onBackground}
+                                        color={Colors.deleteIcon}
                                     />
                                 </>
                                 :

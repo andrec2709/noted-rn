@@ -9,3 +9,11 @@ export const debounce = (func: (...args: any[]) => any, delay: number) => {
         }, delay);
     }
 }
+
+export const truncateContent = (content: string, charCount: number = 20) => {
+    const newContent = content.replaceAll('\n', ' ');
+
+    if (content.length <= charCount) return newContent;
+
+    return newContent.substring(0, charCount);
+};

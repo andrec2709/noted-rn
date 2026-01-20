@@ -17,6 +17,8 @@ import Sortable, { SortableGridDragEndParams, SortableGridRenderItem } from "rea
 import Svg, { Path } from "react-native-svg";
 import Debugger from "@/components/ui/Debugger";
 import { useLanguage } from "@/contexts/LanguageProvider";
+import NotePreview from "@/components/ui/NotePreview";
+import ListPreview from "@/components/ui/ListPreview";
 
 export default function Index() {
   const router = useRouter();
@@ -35,7 +37,12 @@ export default function Index() {
 
   const renderItem = useCallback<SortableGridRenderItem<Payload>>(
     ({ item }) => {
-      return <ItemPreview title={item.title} contentPreview={item.type === 'list' ? '' : item.content.plainText} key={item.id} type={item.type} id={item.id} payload={item} />;
+      switch (item.type) {
+        case 'list':
+          return <ListPreview key={item.id} payload={item} />;
+        case 'note':
+          return <NotePreview key={item.id} payload={item} />;
+      }
     }
     , []);
 

@@ -1,45 +1,32 @@
+import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { useNotes } from "@/contexts/NotesProvider";
 import { useSearchBar } from "@/contexts/SearchBarProvider";
 import { useSelection } from "@/contexts/SelectionProvider";
-import { Payload } from "@/types/notes";
+import { NotePayload, Payload } from "@/types/notes";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import NoteIcon from "../icons/NoteIcon";
+import { truncateContent } from "@/utils";
+import { NotesRepository } from "@/db/notesRepository";
+import Checkbox from "./Checkbox";
 import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
-import ListIcon from "../icons/ListIcon";
-import NoteIcon from "../icons/NoteIcon";
-import Checkbox from "./Checkbox";
-import { NotesRepository } from "@/db/notesRepository";
-import { useNotedTheme } from "@/contexts/NotedThemeProvider";
-import { truncateContent } from "@/utils";
 
-export default function ItemPreview({
-    type,
-    title,
-    contentPreview,
-    id,
+type Props = {
+    payload: NotePayload;
+};
+
+export default function NotePreview({
     payload,
-}: {
-    type: 'note' | 'list';
-    title: string;
-    contentPreview: string;
-    id: string;
-    payload: Payload;
-}) {
+}: Props
+) {
     const { isSelecting, setIsSelecting, setSelectionBuffer } = useSelection();
-    const [checked, setChecked] = useState(false);
     const { isSearchBarOpen } = useSearchBar();
     const { setActiveNote } = useNotes();
     const { Colors } = useNotedTheme();
+    const [checked, setChecked] = useState(false);
     const router = useRouter();
-    let itemIcon: React.ReactNode | null = null;
-
-    if (type === 'note') {
-        itemIcon = <NoteIcon size={24} color={Colors.onNoteBackground} />;
-    } else {
-        itemIcon = <ListIcon size={24} color={Colors.onNoteBackground} />;
-    }
 
     const handlePress = () => {
         if (checked) {
@@ -52,9 +39,11 @@ export default function ItemPreview({
     };
 
     useEffect(() => {
+
         if (!isSelecting) {
             setChecked(false);
         }
+
     }, [isSelecting]);
 
     return (
@@ -65,45 +54,43 @@ export default function ItemPreview({
                 if (!isSearchBarOpen) setIsSelecting(true);
             }}
             onPress={async () => {
-                if (isSelecting) handlePress();
-                else {
-                    const note = await NotesRepository.getNote(id);
+                if (isSelecting) {
+                    handlePress();
+                } else {
+                    const note = await NotesRepository.getNote(payload.id);
                     if (!note) return;
                     setActiveNote(note);
-                    if (note.type === 'note') router.navigate('./note');
-                    else if (note.type === 'list') router.navigate('./list');
+                    router.navigate('./note');
                 }
             }}
         >
-            {itemIcon}
+            <NoteIcon size={24} color={Colors.onNoteBackground} />
             <View>
                 <Text
                     style={[styles.title, { color: Colors.onNoteBackground }]}
                 >
-                    {truncateContent(title)}
+                    {truncateContent(payload.title)}
                 </Text>
                 <Text
                     style={[styles.content, { color: Colors.onNoteBackground }]}
                 >
-                    {truncateContent(contentPreview, 30)}
+                    {truncateContent(payload.content.plainText, 30)}
                 </Text>
             </View>
             <View
                 style={styles.selectionContainer}
             >
                 {
-                    isSelecting
-                        ? <Checkbox size={24} checkedState={checked} onPress={handlePress} colorChecked={Colors.noteChecked} color={Colors.onNoteBackground} />
-                        : ''
-                }
-                {
-                    isSelecting
-                        ? <Sortable.Handle><DragIcon size={24} color={Colors.onNoteBackground} /></Sortable.Handle>
-                        : ''
+                    isSelecting &&
+                    <>
+                        <Checkbox size={24} checkedState={checked} onPress={handlePress} colorChecked={Colors.noteChecked} color={Colors.onNoteBackground} />
+                        <Sortable.Handle><DragIcon size={24} color={Colors.onNoteBackground} /></Sortable.Handle>
+                    </>
                 }
             </View>
-        </TouchableOpacity>
+        </TouchableOpacity >
     );
+
 }
 
 const styles = StyleSheet.create({

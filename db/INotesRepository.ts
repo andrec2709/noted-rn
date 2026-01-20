@@ -15,3 +15,10 @@ export interface INotesRepository {
     getSearchMatches(text: string): Promise<Payload[]>;
     deleteAllNotes(): Promise<void>;
 }
+
+export interface NoteRepository {
+    save(payload: UnparsedPayload): Promise<void>;
+    saveAll(payloads: UnparsedPayload[]): Promise<void>;
+    getById(id: string): Promise<UnparsedPayload | null>;
+    getAll(): Promise<UnparsedPayload[]>;
+}
