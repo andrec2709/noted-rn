@@ -1,29 +1,24 @@
 export type NoteType = 'note' | 'list';
 
-type BasePayload = {
+type BasePayload<TContent, TType extends NoteType> = {
     id: string;
     title: string;
     created_at: string;
     updated_at: string;
     sort_order: number;
+    type: TType;
+    content: TContent;
 };
 
 export type Payload = NotePayload | ListPayload;
 
-export type NotePayload = BasePayload & {
-    type: 'note';
-    content: NoteContentType;
-};
+export type NotePayload = BasePayload<NoteContentType, 'note'>;
 
-export type ListPayload = BasePayload & {
-    type: 'list';
-    content: ListContentType;
-};
+export type ListPayload = BasePayload<ListContentType, 'list'>;
 
-export type UnparsedPayload = BasePayload & {
-    type: NoteType;
-    content: string;
-};
+export type UnparsedPayload = BasePayload<string, NoteType>;
+
+export type ContentType = NoteContentType | ListContentType;
 
 export type NoteContentType = {
     html: string;

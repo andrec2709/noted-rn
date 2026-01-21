@@ -1,19 +1,22 @@
 import { truncateDecimals } from "@/utils";
 import { NoteRepository } from "./INotesRepository";
+import { UnparsedPayload } from "@/types/notes";
 
 interface ISorter {
     moveAfter(targetId: string, afterId: string): Promise<void>;
     moveBefore(targetId: string, beforeId: string): Promise<void>;
     normalize(): Promise<void>;
-    getHighest(): Promise<void>;
-    getLowest(): Promise<void>;
+    getHighest(): Promise<UnparsedPayload | null>;
+    getLowest(): Promise<UnparsedPayload | null>;
 }
 
 export class Sorter implements ISorter {
+
     private readonly NORMALIZATION_BASE: number = 100;
     private readonly NORMALIZATION_STEP: number = 10;
     private readonly NORMALIZATION_THRESHOLD: number = .01;
     private readonly NORMALIZATION_DECIMAL_COUNT: number = this.NORMALIZATION_THRESHOLD.toString(10).split('.')[1]?.length ?? 0;
+
     constructor(private db: NoteRepository) {}
 
     async normalize(): Promise<void> {
@@ -91,6 +94,7 @@ export class Sorter implements ISorter {
         let top;
         let listIndex = 0;
         let bottomIndex: number | undefined;
+        let needsNormalization = false;
 
         for (const note of notes) {
             if (bottomIndex !== undefined && listIndex === bottomIndex + 1) {
@@ -121,7 +125,38 @@ export class Sorter implements ISorter {
         } else {
             target.sort_order = bottom.sort_order - this.NORMALIZATION_STEP;
         }
-        await this.db.save(target);        
 
+        const targetDiff = truncateDecimals(target.sort_order - Math.trunc(target.sort_order), this.NORMALIZATION_DECIMAL_COUNT);
+
+        if (targetDiff <= this.NORMALIZATION_THRESHOLD) {
+            needsNormalization = true;
+        }
+
+        await this.db.save(target);
+
+        if (needsNormalization) {
+            await this.normalize();
+        }
+
+    }
+
+    async getHighest(): Promise<UnparsedPayload | null> {
+        const notes = (await this.db.getAll()).sort((a, b) => a.sort_order - b.sort_order);
+        
+        if (notes.length > 0) {
+            return notes[notes.length - 1];
+        }
+
+        return null;
+    }
+
+    async getLowest(): Promise<UnparsedPayload | null> {
+        const notes = (await this.db.getAll()).sort((a, b) => a.sort_order - b.sort_order);
+        
+        if (notes.length > 0) {
+            return notes[0];
+        }
+        
+        return null;
     }
 }
