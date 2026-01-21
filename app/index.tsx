@@ -83,6 +83,9 @@ export default function Index() {
   const handleDragEnd = async ({ key, fromIndex, toIndex, indexToKey, keyToIndex, data }: SortableGridDragEndParams<Payload>) => {
     const isSingle = data.length === 1;
     console.log('START HERE _______________________________________');
+    if (fromIndex === toIndex) {
+      return;
+    }
     if (isSingle) {
       return;
     }

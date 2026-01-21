@@ -1,8 +1,5 @@
 import { truncateDecimals } from "@/utils";
-import { INoteRepository } from "./INotesRepository";
-import { UnparsedPayload } from "@/types/notes";
 import sqliteDb, { SQLiteDbStarter } from ".";
-import { SQLiteRunResult } from "expo-sqlite";
 
 type SortOrderType = {
     id: string;
@@ -29,14 +26,11 @@ export class SQLiteSorterRepository implements ISorterRepository {
     constructor(private starter: SQLiteDbStarter) {}
 
     async getAll(): Promise<SortOrderType[]> {
-        console.log('--------------from SQLiteSorterRepository.getAll()------------------------');
         const items = await this.starter.db.getAllAsync<SortOrderType>(`SELECT id, sort_order FROM notes ORDER BY sort_order ASC`);
         return items;
     }
 
     async save(item: SortOrderType): Promise<void> {
-        console.log('--------------from SQLiteSorterRepository.save()------------------------');
-        console.log(`||| ${item.id} NEW SORT_ORDER: ${item.sort_order}`);
         await this.starter.db.runAsync(`UPDATE notes SET sort_order = ? WHERE id = ?`, item.sort_order, item.id);
     }
 
@@ -120,7 +114,7 @@ export class Sorter implements ISorter {
     }
 
     async moveAfter(targetId: string, afterId: string): Promise<void> {
-        console.log('here (moveAfter())');
+        
         const notes = (await this.repo.getAll()).sort((a, b) => a.sort_order - b.sort_order);
         let target;
         let bottom;
@@ -160,10 +154,9 @@ export class Sorter implements ISorter {
         } else {
             newSortOrder = bottom.sort_order + this.NORMALIZATION_STEP;
         }
-        console.log(target.sort_order)
+        
         const targetDiff = truncateDecimals(target.sort_order - Math.trunc(target.sort_order), this.NORMALIZATION_DECIMAL_COUNT);
-        console.log(`target.sort_order: ${target.sort_order}`)
-        console.log('targetDiff = ', targetDiff);
+        
         if (targetDiff && targetDiff <= this.NORMALIZATION_THRESHOLD) {
             needsNormalization = true;
         }
@@ -177,7 +170,7 @@ export class Sorter implements ISorter {
     }
     
     async moveBefore(targetId: string, beforeId: string): Promise<void> {
-        console.log('here (moveBefore())');
+        
         const notes = (await this.repo.getAll()).sort((a, b) => b.sort_order - a.sort_order);
         let target;
         let bottom;

@@ -84,7 +84,6 @@ export default function NoteScreen() {
 
     const debouncedHandleChangeText = useMemo(() => debounce(handleChangeText, 500), []);
     useFocusEffect(useCallback(() => { return () => { handleChangeText(); } }, []));
-    console.log('Re-rendered, ', activeNoteRef.current?.content.html);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>

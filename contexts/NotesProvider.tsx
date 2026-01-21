@@ -62,9 +62,7 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
      * Reloads notes state data, fetching the most recent data from SQLite.
      */
     const reload = async () => {
-        // const data = await NotesRepository.getAllNotes();
         const data = await getAll();
-        console.log(data);
         setNotes(data);
     };
 
@@ -103,7 +101,6 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
                 const content: ListContentType = {
                     items: activeNoteRef.current.content.items,
                 };
-                // NotesRepository.updateNoteContent(activeNoteRef.current.id, activeNoteRef.current.title, content);
                 save({...activeNoteRef.current, content: content});
 
             } else if (activeNoteRef.current.type === 'note') {
@@ -111,7 +108,6 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
                     html: activeNoteRef.current.content.html,
                     plainText: activeNoteRef.current.content.plainText,
                 };
-                // NotesRepository.updateNoteContent(activeNoteRef.current.id, activeNoteRef.current.title, content);
                 save({...activeNoteRef.current, content: content});
             }
         }

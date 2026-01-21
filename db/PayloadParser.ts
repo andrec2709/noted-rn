@@ -1,8 +1,10 @@
 import { ContentType, ListContentType, NoteContentType, Payload, UnparsedPayload } from "@/types/notes";
 
-interface IPayloadParser {
+export interface IPayloadParser {
     parse(payload: UnparsedPayload): Payload | null;
     unparse(payload: Payload): UnparsedPayload;
+    parseContent(content: string): ContentType | null;
+    unparseContent(content: ContentType): string | null;
 }
 
 export class PayloadParser implements IPayloadParser {
@@ -42,12 +44,15 @@ export class PayloadParser implements IPayloadParser {
         } else if (this.isListContent(parsed)) {
             return parsed as ListContentType;
         }
+
+        return null;
     }
 
     unparseContent(content: ContentType) {
         if (this.isNoteContent(content) || this.isListContent(content)) {
             return JSON.stringify(content);
         }
+        return null;
     }
 }
 

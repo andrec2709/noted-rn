@@ -9,7 +9,6 @@ import Animated, { useAnimatedRef } from "react-native-reanimated";
 import { useNotes } from "@/contexts/NotesProvider";
 import { ListContentType, ListItemType } from "@/types/notes";
 import { Entypo, Ionicons } from "@expo/vector-icons";
-import { NotesRepository } from "@/db/notesRepository";
 import { v4 as uuidv4 } from 'uuid';
 import { debounce } from '@/utils';
 import { useFocusEffect } from 'expo-router';
@@ -17,12 +16,14 @@ import { useKeyboardState } from 'react-native-keyboard-controller';
 import { useNotedTheme } from '@/contexts/NotedThemeProvider';
 import { useLanguage } from '@/contexts/LanguageProvider';
 import HeaderGeneric from '@/components/layout/HeaderGeneric';
+import { useSaveNote } from '@/db/temp';
 
 
 export default function ListScreen() {
     const { activeNoteRef, setSelectedListItem } = useNotes();
     const { Colors } = useNotedTheme();
     const { i18n } = useLanguage();
+    const save = useSaveNote();
     if (activeNoteRef.current && activeNoteRef.current.type !== 'list') return null;
 
     const [isCheckedItemsOpen, setIsCheckedItemsOpen] = useState(true);
@@ -48,10 +49,10 @@ export default function ListScreen() {
         []
     )
 
-    useEffect(() => { 
+    useEffect(() => {
         if (submitVersion > 0) {
             handleAddItem()
-        } 
+        }
     }, [submitVersion]);
 
     const handleChangeState = (id: string, state: boolean) => {
@@ -156,7 +157,8 @@ export default function ListScreen() {
             const content: ListContentType = {
                 items: active.content.items,
             };
-            NotesRepository.updateNoteContent(active.id, active.title, content);
+
+            save({ ...active, content: content });
         }
     };
 
@@ -167,7 +169,8 @@ export default function ListScreen() {
             const content: ListContentType = {
                 items: active.content.items,
             };
-            NotesRepository.updateNoteContent(active.id, active.title, content);
+
+            save({ ...active, content: content });
         }
     };
 
@@ -183,7 +186,8 @@ export default function ListScreen() {
                 const content: ListContentType = {
                     items: active.content.items,
                 };
-                NotesRepository.updateNoteContent(active.id, active.title, content);
+
+                save({ ...active, content: content });
 
             }
         };
@@ -191,7 +195,6 @@ export default function ListScreen() {
     }, []));
 
     useEffect(() => {
-        console.log('here')
         if (data && activeNoteRef.current && activeNoteRef.current.type === 'list') activeNoteRef.current.content.items = data;
         debouncedHandleUpdateList();
     }, [data]);

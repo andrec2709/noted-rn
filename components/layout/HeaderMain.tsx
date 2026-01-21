@@ -16,7 +16,7 @@ export default function HeaderMain() {
     const { Colors } = useNotedTheme();
     const { isSelecting, setIsSelecting, selectionBuffer, setSelectionBuffer } = useSelection();
     const { deleteNotes, reload, changeNotes } = useNotes();
-    const { isSearchBarOpen, setIsSearchBarOpen } = useSearchBar();
+    const { isSearchBarOpen, setIsSearchBarOpen, searcher } = useSearchBar();
     const { i18n } = useLanguage();
     const router = useRouter();
 
@@ -26,7 +26,7 @@ export default function HeaderMain() {
      * */
     const handleChangeText = async (text: string) => {
         // const results = await NotesRepository.getSearchMatches(text);
-        const results: Payload[] = []; // TODO: implement search
+        const results: Payload[] = await searcher.search(text);
         changeNotes(results);
     };
 

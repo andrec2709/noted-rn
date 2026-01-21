@@ -2,6 +2,7 @@ import { ContentType, NoteContentType, NoteType, Payload, UnparsedPayload } from
 import { sqliteRepo } from "./notesRepository"
 import payloadParser from "./PayloadParser";
 import sorter from './Sorter';
+import searcher from "./Searcher";
 
 export function useSorter() {
     return sorter;
@@ -68,6 +69,10 @@ export function useGetNoteById() {
 
         return parser.parse(result);
     };
+}
+
+export function useSearch() {
+    return searcher;
 }
 
 export function useSaveNote() {
