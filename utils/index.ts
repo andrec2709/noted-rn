@@ -17,3 +17,9 @@ export const truncateContent = (content: string, charCount: number = 20) => {
 
     return newContent.substring(0, charCount);
 };
+
+export const truncateDecimals = (num: number, decimals: number) => {
+  const multiplier = Math.pow(10, decimals);
+  const multipliedNumber = Math.trunc(num * multiplier);
+  return multipliedNumber / multiplier;
+};
