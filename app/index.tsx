@@ -5,7 +5,6 @@ import ItemPreview from "@/components/ui/ItemPreview";
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { useNotes } from "@/contexts/NotesProvider";
 import { useSelection } from "@/contexts/SelectionProvider";
-import { NotesRepository } from "@/db/notesRepository";
 import { Payload } from "@/types/notes";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -19,6 +18,7 @@ import Debugger from "@/components/ui/Debugger";
 import { useLanguage } from "@/contexts/LanguageProvider";
 import NotePreview from "@/components/ui/NotePreview";
 import ListPreview from "@/components/ui/ListPreview";
+import { useCreateNote, useSorter } from "@/db/temp";
 
 export default function Index() {
   const router = useRouter();
@@ -28,6 +28,8 @@ export default function Index() {
   const { notes, reload, setActiveNote } = useNotes();
   const { isSelecting } = useSelection();
   const [isAdding, setIsAdding] = useState(false);
+  const createNote = useCreateNote();
+  const sorter = useSorter();
 
   const handleScreenFocus = useCallback(() => {
     reload();
@@ -46,37 +48,55 @@ export default function Index() {
     }
     , []);
 
+  // const handleDragEnd = async ({ key, fromIndex, toIndex, indexToKey, keyToIndex, data }: SortableGridDragEndParams<Payload>) => {
+
+  //   const prevIndex = toIndex === 0 ? 0 : toIndex - 1;
+  //   const nextIndex = toIndex === data.length - 1 ? data.length - 1 : toIndex + 1;
+  //   let newSortOrder;
+
+  //   const prevItem = data[prevIndex];
+  //   const nextItem = data[nextIndex];
+  //   const selfItem = data[toIndex];
+  //   let selfSO = selfItem.sort_order;
+  //   let prevSO = prevItem.sort_order;
+  //   let nextSO = nextItem.sort_order;
+  //   const isFirst = prevItem.id === selfItem.id;
+  //   const isLast = nextItem.id === selfItem.id;
+  //   // item is first on the list
+  //   if (isFirst) {
+  //     if (selfSO > nextSO) {
+  //       await NotesRepository.swapSortOrders(selfItem.id, selfSO, nextItem.id, nextSO);
+  //     }
+  //   } else if (isLast) {
+  //     if (selfSO < prevSO) {
+  //       await NotesRepository.swapSortOrders(selfItem.id, selfSO, prevItem.id, prevSO);
+  //     }
+  //   } else {
+  //     newSortOrder = (prevSO + nextSO) / 2;
+  //     await NotesRepository.updateSortOrder(selfItem.id, newSortOrder);
+  //   }
+
+  //   await reload();
+
+  // }
+
   const handleDragEnd = async ({ key, fromIndex, toIndex, indexToKey, keyToIndex, data }: SortableGridDragEndParams<Payload>) => {
+    const isSingle = data.length === 1;
+    console.log('START HERE _______________________________________');
+    if (isSingle) {
+      return;
+    }
 
-    const prevIndex = toIndex === 0 ? 0 : toIndex - 1;
-    const nextIndex = toIndex === data.length - 1 ? data.length - 1 : toIndex + 1;
-    let newSortOrder;
-
-    const prevItem = data[prevIndex];
-    const nextItem = data[nextIndex];
-    const selfItem = data[toIndex];
-    let selfSO = selfItem.sort_order;
-    let prevSO = prevItem.sort_order;
-    let nextSO = nextItem.sort_order;
-    const isFirst = prevItem.id === selfItem.id;
-    const isLast = nextItem.id === selfItem.id;
-    // item is first on the list
-    if (isFirst) {
-      if (selfSO > nextSO) {
-        await NotesRepository.swapSortOrders(selfItem.id, selfSO, nextItem.id, nextSO);
-      }
-    } else if (isLast) {
-      if (selfSO < prevSO) {
-        await NotesRepository.swapSortOrders(selfItem.id, selfSO, prevItem.id, prevSO);
-      }
+    if (toIndex === 0) {
+      await sorter.moveBefore(key, data[1].id);      
+    } else if (toIndex === data.length - 1) {
+      await sorter.moveAfter(key, data[data.length - 2].id);
     } else {
-      newSortOrder = (prevSO + nextSO) / 2;
-      await NotesRepository.updateSortOrder(selfItem.id, newSortOrder);
+      await sorter.moveAfter(key, data[toIndex - 1].id);
     }
 
     await reload();
-
-  }
+  };
 
   return (
     <SafeAreaView
@@ -116,7 +136,7 @@ export default function Index() {
                     <Pressable
                       style={[styles.addOpt, { backgroundColor: Colors.primary }]}
                       onPress={async () => {
-                        const newNote = await NotesRepository.createNote('', { items: [] }, 'list');
+                        const newNote = await createNote('', { items: [] }, 'list');
 
                         if (newNote) {
                           setActiveNote(newNote);
@@ -132,7 +152,7 @@ export default function Index() {
                     <Pressable
                       style={[styles.addOpt, { backgroundColor: Colors.primary }]}
                       onPress={async () => {
-                        const newNote = await NotesRepository.createNote('', { html: '', plainText: '' }, 'note');
+                        const newNote = await createNote('', { html: '', plainText: '' }, 'note');
                         
                         if (newNote) {
                           setActiveNote(newNote);

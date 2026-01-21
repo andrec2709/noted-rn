@@ -9,7 +9,6 @@ import type {
 } from 'react-native-enriched';
 import { debounce } from "@/utils";
 import { useNotes } from "@/contexts/NotesProvider";
-import { NotesRepository } from "@/db/notesRepository";
 import { NoteContentType } from "@/types/notes";
 import { useFocusEffect } from "expo-router";
 import { useKeyboardState } from 'react-native-keyboard-controller';
@@ -25,16 +24,14 @@ import OrderedListIcon from "@/components/icons/OrderedListIcon";
 import UnorderedListIcon from "@/components/icons/UnorderedListIcon";
 import H2Icon from "@/components/icons/H2Icon";
 import BlockQuoteIcon from "@/components/icons/BlockQuoteIcon";
+import { useSaveNote } from "@/db/temp";
 
 
 export default function NoteScreen() {
     const { activeNoteRef } = useNotes();
     const { i18n } = useLanguage();
     const { Colors } = useNotedTheme();
-
-    // const htmlVersion = useRef(0);
-    // const plainVersion = useRef(0);
-    // const titleVersion = useRef(0);
+    const save = useSaveNote();
 
 
     if (activeNoteRef.current && activeNoteRef.current.type !== 'note') return null;
@@ -80,7 +77,7 @@ export default function NoteScreen() {
                 plainText: active.content.plainText,
             };
 
-            await NotesRepository.updateNoteContent(active.id, active.title, content);
+            await save({...active, content: content});
         }
     };
 

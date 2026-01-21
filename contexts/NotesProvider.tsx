@@ -1,8 +1,8 @@
 import React, { createContext, RefObject, useContext, useEffect, useRef, useState } from "react";
-import { NotesRepository } from "@/db/notesRepository";
 import { ListContentType, ListItemType, NoteContentType, Payload } from "@/types/notes";
 import { AppState } from "react-native";
 import { useAppState } from "./AppStateProvider";
+import { useGetAllNotes, useNoteRepository, useSaveNote } from "@/db/temp";
 
 type NotesContextType = {
     notes: Payload[];
@@ -54,12 +54,17 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
     const [selectedListItem, setSelectedListItem] = useState('');
     
     const { appStateVisible } = useAppState();
+    const getAll = useGetAllNotes();
+    const save = useSaveNote();
+    const repo = useNoteRepository();
 
     /**
      * Reloads notes state data, fetching the most recent data from SQLite.
      */
     const reload = async () => {
-        const data = await NotesRepository.getAllNotes();
+        // const data = await NotesRepository.getAllNotes();
+        const data = await getAll();
+        console.log(data);
         setNotes(data);
     };
 
@@ -68,7 +73,7 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
      * @param ids the id of the notes to be deleted
      */
     const deleteNotes = async (ids: string[]) => {
-        await Promise.all(ids.map(NotesRepository.deleteNote));
+        await repo.deleteAll(ids);
         await reload();
     };
 
@@ -98,14 +103,16 @@ export const NotesProvider = ({ children }: { children: React.ReactNode }) => {
                 const content: ListContentType = {
                     items: activeNoteRef.current.content.items,
                 };
-                NotesRepository.updateNoteContent(activeNoteRef.current.id, activeNoteRef.current.title, content);
+                // NotesRepository.updateNoteContent(activeNoteRef.current.id, activeNoteRef.current.title, content);
+                save({...activeNoteRef.current, content: content});
 
             } else if (activeNoteRef.current.type === 'note') {
                 const content: NoteContentType = {
                     html: activeNoteRef.current.content.html,
                     plainText: activeNoteRef.current.content.plainText,
                 };
-                NotesRepository.updateNoteContent(activeNoteRef.current.id, activeNoteRef.current.title, content);
+                // NotesRepository.updateNoteContent(activeNoteRef.current.id, activeNoteRef.current.title, content);
+                save({...activeNoteRef.current, content: content});
             }
         }
     }, [appStateVisible]);

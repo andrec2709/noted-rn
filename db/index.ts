@@ -1,9 +1,43 @@
 import * as SQLite from 'expo-sqlite';
 
-export const db = SQLite.openDatabaseSync('notes.db');
+// export const db = SQLite.openDatabaseSync('notes.db');
 
-export async function initDb() {
-    await db.execAsync(`
+// export async function initDb() {
+//     await db.execAsync(`
+//         CREATE TABLE IF NOT EXISTS notes (
+//         id TEXT NOT NULL PRIMARY KEY, 
+//         title TEXT,
+//         content TEXT,
+//         type TEXT NOT NULL DEFAULT 'note',
+//         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+//         updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+//         sort_order INTEGER NOT NULL UNIQUE
+//       );
+//     `);
+// }
+
+export interface IDbStarter {
+  db: any;
+  initDb(): Promise<void>; 
+}
+
+export class SQLiteDbStarter implements IDbStarter {
+  private static instance: SQLiteDbStarter | undefined;
+  db: SQLite.SQLiteDatabase = SQLite.openDatabaseSync('notes.db');
+
+  private constructor() {
+    this.initDb();
+  }
+
+  public static getInstance(): SQLiteDbStarter {
+    if (SQLiteDbStarter.instance === undefined) {
+      SQLiteDbStarter.instance = new SQLiteDbStarter();
+    }
+    return SQLiteDbStarter.instance;
+  }
+
+  async initDb(): Promise<void> {
+    await this.db.execAsync(`
         CREATE TABLE IF NOT EXISTS notes (
         id TEXT NOT NULL PRIMARY KEY, 
         title TEXT,
@@ -14,4 +48,9 @@ export async function initDb() {
         sort_order INTEGER NOT NULL UNIQUE
       );
     `);
+  }
 }
+
+export const sqliteDb = SQLiteDbStarter.getInstance();
+
+export default sqliteDb;

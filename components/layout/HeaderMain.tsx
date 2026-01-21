@@ -3,7 +3,6 @@ import { useNotes } from "@/contexts/NotesProvider";
 import { useSearchBar } from "@/contexts/SearchBarProvider";
 import { useSelection } from "@/contexts/SelectionProvider";
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
-import { NotesRepository } from "@/db/notesRepository";
 import { debounce } from "@/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo } from "react";
@@ -11,6 +10,7 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import CancelIcon from "../icons/CancelIcon";
 import DeleteIcon from "../icons/DeleteIcon";
 import { useRouter } from "expo-router";
+import { Payload } from "@/types/notes";
 
 export default function HeaderMain() {
     const { Colors } = useNotedTheme();
@@ -25,7 +25,8 @@ export default function HeaderMain() {
      * @param text The search term typed by the user
      * */
     const handleChangeText = async (text: string) => {
-        const results = await NotesRepository.getSearchMatches(text);
+        // const results = await NotesRepository.getSearchMatches(text);
+        const results: Payload[] = []; // TODO: implement search
         changeNotes(results);
     };
 

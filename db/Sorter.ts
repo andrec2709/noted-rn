@@ -1,13 +1,77 @@
 import { truncateDecimals } from "@/utils";
-import { NoteRepository } from "./INotesRepository";
+import { INoteRepository } from "./INotesRepository";
 import { UnparsedPayload } from "@/types/notes";
+import sqliteDb, { SQLiteDbStarter } from ".";
+import { SQLiteRunResult } from "expo-sqlite";
 
-interface ISorter {
+type SortOrderType = {
+    id: string;
+    sort_order: number;
+};
+
+export interface ISorter {
     moveAfter(targetId: string, afterId: string): Promise<void>;
     moveBefore(targetId: string, beforeId: string): Promise<void>;
+    create(): Promise<number>;
     normalize(): Promise<void>;
-    getHighest(): Promise<UnparsedPayload | null>;
-    getLowest(): Promise<UnparsedPayload | null>;
+}
+
+interface ISorterRepository {
+    getAll(): Promise<SortOrderType[]>;
+    save(item: SortOrderType): Promise<void>;
+    saveAll(items: SortOrderType[]): Promise<void>;
+    getSortOrder(id: string): Promise<SortOrderType | null>;
+    getHighest(): Promise<SortOrderType | null>;
+    getLowest(): Promise<SortOrderType | null>;
+}
+
+export class SQLiteSorterRepository implements ISorterRepository {
+    constructor(private starter: SQLiteDbStarter) {}
+
+    async getAll(): Promise<SortOrderType[]> {
+        console.log('--------------from SQLiteSorterRepository.getAll()------------------------');
+        const items = await this.starter.db.getAllAsync<SortOrderType>(`SELECT id, sort_order FROM notes ORDER BY sort_order ASC`);
+        return items;
+    }
+
+    async save(item: SortOrderType): Promise<void> {
+        console.log('--------------from SQLiteSorterRepository.save()------------------------');
+        console.log(`||| ${item.id} NEW SORT_ORDER: ${item.sort_order}`);
+        await this.starter.db.runAsync(`UPDATE notes SET sort_order = ? WHERE id = ?`, item.sort_order, item.id);
+    }
+
+    async saveAll(items: SortOrderType[]): Promise<void> {
+        await this.starter.db.withTransactionAsync(async () => {
+            for (const item of items) {
+                await this.save(item);
+            }
+        });
+    }
+
+    async getSortOrder(id: string): Promise<SortOrderType | null> {
+        const item = await this.starter.db.getFirstAsync<SortOrderType>(`SELECT id, sort_order FROM notes WHERE id = ?`, id);
+        return item;
+    }
+
+    async getHighest(): Promise<SortOrderType | null> {
+        const items = (await this.getAll()).sort((a, b) => b.sort_order - a.sort_order);
+        
+        if (items.length > 0) {
+            return items[0];
+        }
+
+        return null;
+    }
+
+    async getLowest(): Promise<SortOrderType | null> {
+        const items = (await this.getAll()).sort((a, b) => a.sort_order - b.sort_order);
+
+        if (items.length > 0) {
+            return items[0];
+        }
+
+        return null;
+    }
 }
 
 export class Sorter implements ISorter {
@@ -17,12 +81,24 @@ export class Sorter implements ISorter {
     private readonly NORMALIZATION_THRESHOLD: number = .01;
     private readonly NORMALIZATION_DECIMAL_COUNT: number = this.NORMALIZATION_THRESHOLD.toString(10).split('.')[1]?.length ?? 0;
 
-    constructor(private db: NoteRepository) {}
+    constructor(private repo: ISorterRepository) {}
 
     async normalize(): Promise<void> {
-        const notes = await this.db.getAll();
+        console.log('HERE___normalizer()')
+        const notes = await this.repo.getAll();
         let value = this.NORMALIZATION_BASE;
-        const newNotes = [];
+        let sentinelValue = -9999;
+        let newNotes = [];
+
+        for (const note of notes) {
+            note.sort_order = sentinelValue;
+            newNotes.push(note);
+            sentinelValue += this.NORMALIZATION_STEP;
+        }
+
+        await this.repo.saveAll(newNotes);
+
+        newNotes = [];
 
         for (const note of notes) {
             note.sort_order = value;
@@ -30,11 +106,22 @@ export class Sorter implements ISorter {
             value += this.NORMALIZATION_STEP;
         }
 
-        await this.db.saveAll(newNotes);
+        await this.repo.saveAll(newNotes);
+    }
+
+    async create(): Promise<number> {
+        const highest = await this.repo.getHighest();
+
+        if (highest) {
+            return highest.sort_order + this.NORMALIZATION_STEP;
+        }
+
+        return this.NORMALIZATION_BASE;
     }
 
     async moveAfter(targetId: string, afterId: string): Promise<void> {
-        const notes = (await this.db.getAll()).sort((a, b) => a.sort_order - b.sort_order);
+        console.log('here (moveAfter())');
+        const notes = (await this.repo.getAll()).sort((a, b) => a.sort_order - b.sort_order);
         let target;
         let bottom;
         let top;
@@ -66,20 +153,22 @@ export class Sorter implements ISorter {
             return;
         }
 
+        let newSortOrder
 
         if (top) {
-            target.sort_order = (top.sort_order + bottom.sort_order) / 2;
+            newSortOrder = (top.sort_order + bottom.sort_order) / 2;
         } else {
-            target.sort_order = bottom.sort_order + this.NORMALIZATION_STEP;
+            newSortOrder = bottom.sort_order + this.NORMALIZATION_STEP;
         }
-
+        console.log(target.sort_order)
         const targetDiff = truncateDecimals(target.sort_order - Math.trunc(target.sort_order), this.NORMALIZATION_DECIMAL_COUNT);
-
-        if (targetDiff <= this.NORMALIZATION_THRESHOLD) {
+        console.log(`target.sort_order: ${target.sort_order}`)
+        console.log('targetDiff = ', targetDiff);
+        if (targetDiff && targetDiff <= this.NORMALIZATION_THRESHOLD) {
             needsNormalization = true;
         }
 
-        await this.db.save(target);
+        await this.repo.save({id: targetId, sort_order: newSortOrder});
 
         if (needsNormalization) {
             await this.normalize();
@@ -88,7 +177,8 @@ export class Sorter implements ISorter {
     }
     
     async moveBefore(targetId: string, beforeId: string): Promise<void> {
-        const notes = (await this.db.getAll()).sort((a, b) => b.sort_order - a.sort_order);
+        console.log('here (moveBefore())');
+        const notes = (await this.repo.getAll()).sort((a, b) => b.sort_order - a.sort_order);
         let target;
         let bottom;
         let top;
@@ -128,35 +218,21 @@ export class Sorter implements ISorter {
 
         const targetDiff = truncateDecimals(target.sort_order - Math.trunc(target.sort_order), this.NORMALIZATION_DECIMAL_COUNT);
 
-        if (targetDiff <= this.NORMALIZATION_THRESHOLD) {
+        if (targetDiff && targetDiff <= this.NORMALIZATION_THRESHOLD) {
             needsNormalization = true;
         }
 
-        await this.db.save(target);
+        await this.repo.save(target);
 
         if (needsNormalization) {
             await this.normalize();
         }
 
     }
-
-    async getHighest(): Promise<UnparsedPayload | null> {
-        const notes = (await this.db.getAll()).sort((a, b) => a.sort_order - b.sort_order);
-        
-        if (notes.length > 0) {
-            return notes[notes.length - 1];
-        }
-
-        return null;
-    }
-
-    async getLowest(): Promise<UnparsedPayload | null> {
-        const notes = (await this.db.getAll()).sort((a, b) => a.sort_order - b.sort_order);
-        
-        if (notes.length > 0) {
-            return notes[0];
-        }
-        
-        return null;
-    }
 }
+
+const sqliteSorterRepo = new SQLiteSorterRepository(sqliteDb);
+
+export const sorter = new Sorter(sqliteSorterRepo);
+
+export default sorter;

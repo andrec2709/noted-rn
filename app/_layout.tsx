@@ -4,7 +4,7 @@ import { NotedThemeProvider } from "@/contexts/NotedThemeProvider";
 import { NotesProvider } from "@/contexts/NotesProvider";
 import { SearchBarProvider } from "@/contexts/SearchBarProvider";
 import { SelectionProvider } from "@/contexts/SelectionProvider";
-import { initDb } from "@/db";
+import sqliteDb from "@/db";
 import { getLocales } from "expo-localization";
 import { SplashScreen, Stack } from "expo-router";
 import { useState, useEffect } from "react";
@@ -23,12 +23,12 @@ export default function RootLayout() {
   useEffect(() => {
     async function initAsync() {
       try {
-        await initDb();
+        const db = sqliteDb;
+        await db.initDb();
       } catch (error) {
         console.warn(error);
       } finally {
         setTimeout(() => { setIsReady(true) }, 1000);
-        // setIsReady(true);
       }
     }
 

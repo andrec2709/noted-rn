@@ -1,9 +1,10 @@
 import 'react-native-get-random-values';
 import { ListContentType, NoteContentType, Payload, NoteType, UnparsedPayload } from "@/types/notes";
-import { db } from ".";
+import sqliteDb, { IDbStarter, SQLiteDbStarter } from ".";
 import { v4 as uuidv4 } from 'uuid';
-import { INotesRepository, NoteRepository } from './INotesRepository';
+import { INotesRepository, INoteRepository } from './INotesRepository';
 import * as SQLite from 'expo-sqlite';
+import sorter, { ISorter } from './Sorter';
 
 // export const NotesRepository: INotesRepository = {
 //     async createNote(
@@ -132,34 +133,25 @@ import * as SQLite from 'expo-sqlite';
 // }
 
 
-export class SQLiteNoteRepository implements NoteRepository {
-    private static instance: SQLiteNoteRepository | undefined;
-    private db = SQLite.openDatabaseSync('notes.db');
+export class SQLiteNoteRepository implements INoteRepository {
 
-    private constructor() {
-        this.initDb();
-    }
+    constructor(private starter: SQLiteDbStarter, private sorter: ISorter) {}
 
-    public static getInstance(): SQLiteNoteRepository {
-        if (SQLiteNoteRepository.instance === undefined) {
-            SQLiteNoteRepository.instance = new SQLiteNoteRepository();
+    async create(title: string, content: string, type: NoteType): Promise<UnparsedPayload | null> {
+        const id = uuidv4();
+        const sortOrder = await this.sorter.create();
+
+        const result = await this.starter.db.runAsync(
+            `INSERT INTO notes (id, title, content, type, sort_order) VALUES (?, ?, ?, ?, ?)`,
+            id, title, content, type, sortOrder
+        )
+
+        if (result.changes > 0 && result.lastInsertRowId !== undefined) {
+            const createdItem = await this.getById(id);
+            return createdItem;
         }
 
-        return SQLiteNoteRepository.instance;
-    }
-
-    private async initDb() {
-        await this.db.execAsync(`
-        CREATE TABLE IF NOT EXISTS notes (
-        id TEXT NOT NULL PRIMARY KEY, 
-        title TEXT,
-        content TEXT,
-        type TEXT NOT NULL DEFAULT 'note',
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        sort_order INTEGER NOT NULL UNIQUE
-      );
-    `);
+        return null;
     }
 
     async save(payload: UnparsedPayload): Promise<void> {
@@ -168,11 +160,11 @@ export class SQLiteNoteRepository implements NoteRepository {
         const content = payload.content;
         const sortOrder = payload.sort_order;
 
-        await this.db.runAsync('UPDATE notes SET title = ?, content = ?, sort_order = ? WHERE id = ?', title, content, sortOrder, id);
+        await this.starter.db.runAsync('UPDATE notes SET title = ?, content = ?, sort_order = ? WHERE id = ?', title, content, sortOrder, id);
     }
 
     async saveAll(payloads: UnparsedPayload[]): Promise<void> {
-        this.db.withTransactionAsync(async () => {
+        await this.starter.db.withTransactionAsync(async () => {
             for (const payload of payloads) {
                 await this.save(payload);
             }
@@ -180,14 +172,28 @@ export class SQLiteNoteRepository implements NoteRepository {
     }
 
     async getById(id: string): Promise<UnparsedPayload | null> {
-        const payload = this.db.getFirstAsync<UnparsedPayload>('SELECT * FROM notes WHERE id = ?', id);
+        const payload = this.starter.db.getFirstAsync<UnparsedPayload>('SELECT * FROM notes WHERE id = ?', id);
         return payload;
     }
 
     async getAll(): Promise<UnparsedPayload[]> {
-        const notes = await this.db.getAllAsync<UnparsedPayload>('SELECT * FROM notes ORDER BY sort_order ASC');
+        const notes = await this.starter.db.getAllAsync<UnparsedPayload>('SELECT * FROM notes ORDER BY sort_order ASC');
         return notes;
+    }
+
+    async delete(id: string): Promise<void> {
+        await this.starter.db.runAsync('DELETE FROM notes WHERE id = ?', id);
+    }
+
+    async deleteAll(ids: string[]): Promise<void> {
+        await this.starter.db.withTransactionAsync(async () => {
+            for (const id of ids) {
+                await this.delete(id);
+            }
+        });
     }
 }
 
-export const sqliteRepo = SQLiteNoteRepository.getInstance();
+export const sqliteRepo = new SQLiteNoteRepository(sqliteDb, sorter);
+
+export default sqliteRepo;

@@ -8,10 +8,10 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import NoteIcon from "../icons/NoteIcon";
 import { truncateContent } from "@/utils";
-import { NotesRepository } from "@/db/notesRepository";
 import Checkbox from "./Checkbox";
 import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
+import { useGetNoteById, useNoteRepository } from "@/db/temp";
 
 type Props = {
     payload: NotePayload;
@@ -25,6 +25,7 @@ export default function NotePreview({
     const { isSearchBarOpen } = useSearchBar();
     const { setActiveNote } = useNotes();
     const { Colors } = useNotedTheme();
+    const getById = useGetNoteById();
     const [checked, setChecked] = useState(false);
     const router = useRouter();
 
@@ -57,7 +58,7 @@ export default function NotePreview({
                 if (isSelecting) {
                     handlePress();
                 } else {
-                    const note = await NotesRepository.getNote(payload.id);
+                    const note = await getById(payload.id);
                     if (!note) return;
                     setActiveNote(note);
                     router.navigate('./note');
