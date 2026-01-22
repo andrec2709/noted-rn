@@ -1,7 +1,7 @@
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export default function HeaderGeneric() {
     const { Colors } = useNotedTheme();
@@ -9,12 +9,16 @@ export default function HeaderGeneric() {
 
     return (
         <View style={[styles.headerContainer, { backgroundColor: Colors.background }]}>
-            <Ionicons
-                name="arrow-back"
-                size={20}
-                color={Colors.onBackground}
+            <TouchableOpacity
                 onPress={() => router.back()}
-            />
+                hitSlop={{bottom: 10, top: 10, right: 10, left: 10}}
+            >
+                <Ionicons
+                    name="arrow-back"
+                    size={20}
+                    color={Colors.onBackground}
+                />
+            </TouchableOpacity>
         </View>
     );
 }

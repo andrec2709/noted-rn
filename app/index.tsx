@@ -31,7 +31,7 @@ export default function Index() {
   const [isAdding, setIsAdding] = useState(false);
   const createNote = useCreateNote();
   const sorter = useSorter();
-  const { isSearchBarOpen } = useSearchBar();
+  const { isSearchBarOpen, setIsSearchBarOpen } = useSearchBar();
   const insets = useSafeAreaInsets();
 
   const AnimatedAddButton = Animated.createAnimatedComponent(AddButton);
@@ -54,6 +54,7 @@ export default function Index() {
 
     return () => {
       resetAddingState();
+      setIsSearchBarOpen(false);
     };
   }, []);
 
