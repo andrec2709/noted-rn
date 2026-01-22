@@ -1,3 +1,4 @@
+import { IconProps } from "@/ui/icon/types";
 import { ColorValue } from "react-native";
 import Svg, { Path, SvgProps } from "react-native-svg";
 
@@ -10,7 +11,7 @@ export default function BoldIcon({
     color = '#0c0c0cff',
     size = 24,
     ...props
-}: Props
+}: IconProps
 ) {
     return (
         <Svg

@@ -1,12 +1,8 @@
+import { IconProps } from "@/ui/icon/types";
 import { ColorValue } from "react-native";
 import Svg, { Path, SvgProps } from "react-native-svg";
 
-type Props = Omit<SvgProps, 'width' | 'height' | 'color' | 'fill'> & {
-    size?: number;
-    color?: ColorValue;
-};
-
-export default function CancelIcon({ size = 24, color = '#0c0c0cff', ...props }: Props) {
+export default function CancelIcon({ size = 24, color = '#0c0c0cff', ...props }: IconProps) {
     return (
         <Svg
             // xmlns="http://www.w3.org/2000/svg"

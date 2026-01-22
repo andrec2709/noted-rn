@@ -1,16 +1,11 @@
-import { ColorValue } from "react-native";
-import Svg, { Path, SvgProps } from "react-native-svg";
-
-type Props = Omit<SvgProps, 'width' | 'height' | 'fill' | 'color'> & {
-    color?: ColorValue;
-    size?: number;
-};
+import { IconProps } from "@/ui/icon/types";
+import Svg, { Path } from "react-native-svg";
 
 export default function UnorderedListIcon({
     color = '#0c0c0cff',
     size = 24,
     ...props
-}: Props
+}: IconProps
 ) {
     return (
         <Svg

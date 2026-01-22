@@ -4,20 +4,22 @@ import HeaderMain from "@/components/layout/HeaderMain";
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { useNotes } from "@/contexts/NotesProvider";
 import { useSelection } from "@/contexts/SelectionProvider";
-import { Payload } from "@/domain/notes/types";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { NoteType, Payload } from "@/domain/notes/types";
+import { Href, useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { BackHandler, NativeEventSubscription, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Animated, { useAnimatedRef } from "react-native-reanimated";
+import Animated, { useAnimatedRef, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Sortable, { SortableGridDragEndParams, SortableGridRenderItem } from "react-native-sortables";
-import Svg, { Path } from "react-native-svg";
 import { useLanguage } from "@/contexts/LanguageProvider";
 import NotePreview from "@/components/ui/NotePreview";
 import ListPreview from "@/components/ui/ListPreview";
 import { useCreateNote } from "@/application/notes/useCreateNote";
 import { useSorter } from "@/application/notes/useSorter";
+import { useSearchBar } from "@/contexts/SearchBarProvider";
+import AddButton from "@/components/ui/AddButton";
+import AddButtonOpt from "@/components/ui/AddButtonOpt";
 
 export default function Index() {
   const router = useRouter();
@@ -29,9 +31,29 @@ export default function Index() {
   const [isAdding, setIsAdding] = useState(false);
   const createNote = useCreateNote();
   const sorter = useSorter();
+  const { isSearchBarOpen } = useSearchBar();
+
+  const AnimatedAddButton = Animated.createAnimatedComponent(AddButton);
+  const rotation = useSharedValue(0);
+  const bottom = useSharedValue(-50);
+  const opacity = useSharedValue(0);
+  const animatedStyleAddButton = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
+  const resetAddingState = () => {
+    setIsAdding(false);
+    rotation.value = withTiming(0, { duration: 150 });
+    opacity.value = withTiming(0, { duration: 150 });
+    bottom.value = withTiming(-50, { duration: 150 });
+  };
 
   const handleScreenFocus = useCallback(() => {
     reload();
+
+    return () => {
+      resetAddingState();
+    };
   }, []);
 
   useFocusEffect(handleScreenFocus);
@@ -47,41 +69,9 @@ export default function Index() {
     }
     , []);
 
-  // const handleDragEnd = async ({ key, fromIndex, toIndex, indexToKey, keyToIndex, data }: SortableGridDragEndParams<Payload>) => {
-
-  //   const prevIndex = toIndex === 0 ? 0 : toIndex - 1;
-  //   const nextIndex = toIndex === data.length - 1 ? data.length - 1 : toIndex + 1;
-  //   let newSortOrder;
-
-  //   const prevItem = data[prevIndex];
-  //   const nextItem = data[nextIndex];
-  //   const selfItem = data[toIndex];
-  //   let selfSO = selfItem.sort_order;
-  //   let prevSO = prevItem.sort_order;
-  //   let nextSO = nextItem.sort_order;
-  //   const isFirst = prevItem.id === selfItem.id;
-  //   const isLast = nextItem.id === selfItem.id;
-  //   // item is first on the list
-  //   if (isFirst) {
-  //     if (selfSO > nextSO) {
-  //       await NotesRepository.swapSortOrders(selfItem.id, selfSO, nextItem.id, nextSO);
-  //     }
-  //   } else if (isLast) {
-  //     if (selfSO < prevSO) {
-  //       await NotesRepository.swapSortOrders(selfItem.id, selfSO, prevItem.id, prevSO);
-  //     }
-  //   } else {
-  //     newSortOrder = (prevSO + nextSO) / 2;
-  //     await NotesRepository.updateSortOrder(selfItem.id, newSortOrder);
-  //   }
-
-  //   await reload();
-
-  // }
-
   const handleDragEnd = async ({ key, fromIndex, toIndex, indexToKey, keyToIndex, data }: SortableGridDragEndParams<Payload>) => {
     const isSingle = data.length === 1;
-    console.log('START HERE _______________________________________');
+
     if (fromIndex === toIndex) {
       return;
     }
@@ -90,7 +80,7 @@ export default function Index() {
     }
 
     if (toIndex === 0) {
-      await sorter.moveBefore(key, data[1].id);      
+      await sorter.moveBefore(key, data[1].id);
     } else if (toIndex === data.length - 1) {
       await sorter.moveAfter(key, data[data.length - 2].id);
     } else {
@@ -100,6 +90,45 @@ export default function Index() {
     await reload();
   };
 
+  const handleAdd = async (type: NoteType) => {
+    let newNote;
+    let route: Href;
+
+    switch (type) {
+      case 'note':
+        newNote = await createNote('', { html: '', plainText: '' }, 'note');
+        route = './note';
+        break;
+      case 'list':
+        newNote = await createNote('', { items: [] }, 'list');
+        route = './list';
+        break;
+    }
+
+    if (newNote) {
+      setActiveNote(newNote);
+      router.navigate(route);
+    }
+  };
+
+  const handleGoBack = () => {
+    resetAddingState();
+    return true;
+  };
+
+  useEffect(() => {
+    let subscription: NativeEventSubscription;
+    if (isAdding) {
+      subscription = BackHandler.addEventListener('hardwareBackPress', handleGoBack);
+    }
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    }
+  }, [isAdding]);
+
   return (
     <SafeAreaView
       edges={['top']}
@@ -107,7 +136,6 @@ export default function Index() {
         flex: 1,
         backgroundColor: Colors.background,
       }}
-
     >
       <HeaderMain />
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -127,65 +155,40 @@ export default function Index() {
         </Animated.ScrollView>
         {
           // Displays FAB if not in selection mode
-          !isSelecting && (
+          (!isSelecting && !isSearchBarOpen) && (
             <View
               style={styles.addContainer}
             >
               {
                 // Displays options when user is adding
                 isAdding && (
-                  <View style={styles.optContainer}>
-                    <Pressable
-                      style={[styles.addOpt, { backgroundColor: Colors.primary }]}
-                      onPress={async () => {
-                        const newNote = await createNote('', { items: [] }, 'list');
-
-                        if (newNote) {
-                          setActiveNote(newNote);
-                          router.navigate('./list');
-                        }
-                      }}
-                    >
-                      <ListIcon color={Colors.onPrimary} size={24} />
-                      <Text
-                        style={[styles.addOptText, { color: Colors.onPrimary }]}
-                      >{i18n.t('addList')}</Text>
-                    </Pressable>
-                    <Pressable
-                      style={[styles.addOpt, { backgroundColor: Colors.primary }]}
-                      onPress={async () => {
-                        const newNote = await createNote('', { html: '', plainText: '' }, 'note');
-                        
-                        if (newNote) {
-                          setActiveNote(newNote);
-                          router.navigate('./note');
-                        }
-                      }}
-                    >
-                      <NoteIcon color={Colors.onPrimary} size={24} />
-                      <Text
-                        style={[styles.addOptText, { color: Colors.onPrimary }]}
-                      >{i18n.t('addNote')}</Text>
-                    </Pressable>
-                  </View>
+                  <Animated.View
+                    style={[
+                      styles.optContainer,
+                      {
+                        bottom,
+                        opacity
+                      }
+                    ]}>
+                    <AddButtonOpt text={i18n.t('addList')} Icon={ListIcon} onPress={() => handleAdd('list')} />
+                    <AddButtonOpt text={i18n.t('addNote')} Icon={NoteIcon} onPress={() => handleAdd('note')} />
+                  </Animated.View>
                 )
               }
-              <Pressable
-                style={[styles.addButton, { backgroundColor: Colors.primary }]}
+              <AnimatedAddButton
                 onPress={() => {
-                  setIsAdding(!isAdding);
+                  rotation.value = rotation.value === 0 ? withTiming(90, { duration: 150 }) : withTiming(0, { duration: 150 });
+                  bottom.value = bottom.value === -50 ? withTiming(0, { duration: 150 }) : withTiming(-50, { duration: 150 });
+                  opacity.value = opacity.value === 0 ? withTiming(100, { duration: 150 }) : withTiming(0, { duration: 150 });
+
+                  requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                      setIsAdding(!isAdding);
+                    });
+                  });
                 }}
-              >
-                <Svg
-                  // xmlns="http://www.w3.org/2000/svg"
-                  width={48}
-                  height={48}
-                  fill={Colors.onPrimary}
-                  viewBox="0 -960 960 960"
-                >
-                  <Path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-                </Svg>
-              </Pressable>
+                style={animatedStyleAddButton}
+              />
             </View>
           )
         }
@@ -202,33 +205,8 @@ const styles = StyleSheet.create({
     right: 30,
     rowGap: 30,
   },
-  addOpt: {
-    position: 'relative',
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 100,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    columnGap: 10,
-    alignSelf: 'flex-end',
-    justifyContent: 'flex-end',
-
-  },
   optContainer: {
     rowGap: 10,
     position: 'relative',
   },
-  addOptText: {
-    fontSize: 16,
-    fontFamily: 'Inter'
-  },
-  addButton: {
-    borderRadius: 40,
-    aspectRatio: 1,
-    width: 80,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'flex-end'
-  }
 });

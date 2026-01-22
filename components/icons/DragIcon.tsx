@@ -1,16 +1,13 @@
+import { IconProps } from "@/ui/icon/types";
 import { ColorValue, OpaqueColorValue, StyleProp, ViewStyle } from "react-native";
 import Svg, { Path, SvgProps } from "react-native-svg";
-
-type Props = Omit<SvgProps, 'width' | 'height' | 'color' | 'fill'> & {
-    size?: number;
-    color?: ColorValue;
-};
 
 export default function DragIcon({
     size = 24,
     color = '#0c0c0cff',
     ...props
-}: Props) {
+}: IconProps
+) {
     return (
         <Svg
             // xmlns="http://www.w3.org/2000/svg"

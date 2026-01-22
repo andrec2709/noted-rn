@@ -1,16 +1,12 @@
+import { IconProps } from "@/ui/icon/types";
 import { ColorValue } from "react-native";
 import Svg, { Path, SvgProps } from "react-native-svg";
 
-type Props = Omit<SvgProps, 'width' | 'height' | 'fill'> & {
-    color?: ColorValue;
-    size?: number;
-};
-
 export default function NoteIcon({
-    size = 32,
+    size = 24,
     color = "#000000",
     ...props
-}: Props) {
+}: IconProps) {
     return (
         <Svg
             // xmlns="http://www.w3.org/2000/svg"

@@ -1,14 +1,12 @@
+import { IconProps } from "@/ui/icon/types";
 import { ColorValue } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 export default function ListIcon({
-    size = 32,
+    size = 24,
     color = "#000000",
     ...props
-}: {
-    size?: number;
-    color?: ColorValue;
-}) {
+}: IconProps) {
     return (
         <Svg
             // xmlns="http://www.w3.org/2000/svg"
