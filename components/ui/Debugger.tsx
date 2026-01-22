@@ -1,8 +1,8 @@
-import  'react-native-get-random-values';
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { NotesRepository } from "@/db/notesRepository";
-import { NoteContentType, ListContentType } from "@/types/notes";
 import { useNotes } from "@/contexts/NotesProvider";
+import { NotesRepository } from "@/db/notes/SQLiteNoteRepository";
+import { ListContentType, NoteContentType } from "@/types/notes";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function Debugger() {

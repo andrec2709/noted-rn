@@ -2,7 +2,6 @@ import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { useNotes } from "@/contexts/NotesProvider";
 import { useSearchBar } from "@/contexts/SearchBarProvider";
 import { useSelection } from "@/contexts/SelectionProvider";
-import { NotePayload, Payload } from "@/types/notes";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -11,7 +10,8 @@ import { truncateContent } from "@/utils";
 import Checkbox from "./Checkbox";
 import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
-import { useGetNoteById, useNoteRepository } from "@/db/temp";
+import { useGetNoteById } from "@/application/notes/useGetNoteById";
+import { NotePayload } from "@/domain/notes/types";
 
 type Props = {
     payload: NotePayload;

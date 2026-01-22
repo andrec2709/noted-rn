@@ -1,11 +1,5 @@
-import { ContentType, ListContentType, NoteContentType, Payload, UnparsedPayload } from "@/types/notes";
-
-export interface IPayloadParser {
-    parse(payload: UnparsedPayload): Payload | null;
-    unparse(payload: Payload): UnparsedPayload;
-    parseContent(content: string): ContentType | null;
-    unparseContent(content: ContentType): string | null;
-}
+import { ContentType, ListContentType, NoteContentType, Payload, UnparsedPayload } from "@/domain/notes/types";
+import { IPayloadParser } from "./IPayloadParser";
 
 export class PayloadParser implements IPayloadParser {
 

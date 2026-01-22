@@ -4,10 +4,10 @@ import { NotedThemeProvider } from "@/contexts/NotedThemeProvider";
 import { NotesProvider } from "@/contexts/NotesProvider";
 import { SearchBarProvider } from "@/contexts/SearchBarProvider";
 import { SelectionProvider } from "@/contexts/SelectionProvider";
-import sqliteDb from "@/db";
+import sqliteDb from "@/db/SQLiteDbStarter";
 import { getLocales } from "expo-localization";
 import { SplashScreen, Stack } from "expo-router";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -23,8 +23,7 @@ export default function RootLayout() {
   useEffect(() => {
     async function initAsync() {
       try {
-        const db = sqliteDb;
-        await db.initDb();
+        await sqliteDb.initDb();
       } catch (error) {
         console.warn(error);
       } finally {

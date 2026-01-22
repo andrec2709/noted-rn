@@ -1,11 +1,11 @@
-import { getLocales } from "expo-localization";
-import { createContext, useContext, useEffect, useState } from "react";
-import { I18n } from 'i18n-js';
-import ptBR from 'i18n-js/json/pt-BR.json';
-import en from 'i18n-js/json/en.json';
-import { Language, Translations } from "@/types/lang";
-import translations from "@/language/translations";
+import translations from "@/constants/translations";
+import { Language } from "@/domain/language/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getLocales } from "expo-localization";
+import { I18n } from 'i18n-js';
+import en from 'i18n-js/json/en.json';
+import ptBR from 'i18n-js/json/pt-BR.json';
+import { createContext, useContext, useEffect, useState } from "react";
 
 type LanguageContextType = {
     lang: Language;

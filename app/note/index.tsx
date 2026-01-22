@@ -9,7 +9,7 @@ import type {
 } from 'react-native-enriched';
 import { debounce } from "@/utils";
 import { useNotes } from "@/contexts/NotesProvider";
-import { NoteContentType } from "@/types/notes";
+import { NoteContentType } from "@/domain/notes/types";
 import { useFocusEffect } from "expo-router";
 import { useKeyboardState } from 'react-native-keyboard-controller';
 import { useLanguage } from "@/contexts/LanguageProvider";
@@ -24,7 +24,7 @@ import OrderedListIcon from "@/components/icons/OrderedListIcon";
 import UnorderedListIcon from "@/components/icons/UnorderedListIcon";
 import H2Icon from "@/components/icons/H2Icon";
 import BlockQuoteIcon from "@/components/icons/BlockQuoteIcon";
-import { useSaveNote } from "@/db/temp";
+import { useSaveNote } from "@/application/notes/useSaveNote";
 
 
 export default function NoteScreen() {

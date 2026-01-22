@@ -10,7 +10,7 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import CancelIcon from "../icons/CancelIcon";
 import DeleteIcon from "../icons/DeleteIcon";
 import { useRouter } from "expo-router";
-import { Payload } from "@/types/notes";
+import { Payload } from "@/domain/notes/types";
 
 export default function HeaderMain() {
     const { Colors } = useNotedTheme();

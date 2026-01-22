@@ -1,8 +1,8 @@
 import { DarkColors, LightColors } from "@/constants/theme";
-import { Theme, ThemeColors } from "@/types/theme";
+import { Theme, ThemeColors } from "@/ui/theme/types";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ThemeContextType = {
     theme: string;

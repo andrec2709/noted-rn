@@ -2,7 +2,7 @@ import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { useNotes } from "@/contexts/NotesProvider";
 import { useSearchBar } from "@/contexts/SearchBarProvider";
 import { useSelection } from "@/contexts/SelectionProvider";
-import { ListPayload, Payload } from "@/types/notes";
+import { ListPayload, Payload } from "@/domain/notes/types";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -13,7 +13,7 @@ import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
 import ListIcon from "../icons/ListIcon";
 import { useLanguage } from "@/contexts/LanguageProvider";
-import { useGetNoteById } from "@/db/temp";
+import { useGetNoteById } from "@/application/notes/useGetNoteById";
 
 type Props = {
     payload: ListPayload;

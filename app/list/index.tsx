@@ -7,7 +7,7 @@ import { GestureHandlerRootView, TextInput } from "react-native-gesture-handler"
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Animated, { useAnimatedRef } from "react-native-reanimated";
 import { useNotes } from "@/contexts/NotesProvider";
-import { ListContentType, ListItemType } from "@/types/notes";
+import { ListContentType, ListItemType } from "@/domain/notes/types";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import { v4 as uuidv4 } from 'uuid';
 import { debounce } from '@/utils';
@@ -16,7 +16,7 @@ import { useKeyboardState } from 'react-native-keyboard-controller';
 import { useNotedTheme } from '@/contexts/NotedThemeProvider';
 import { useLanguage } from '@/contexts/LanguageProvider';
 import HeaderGeneric from '@/components/layout/HeaderGeneric';
-import { useSaveNote } from '@/db/temp';
+import { useSaveNote } from '@/application/notes/useSaveNote';
 
 
 export default function ListScreen() {

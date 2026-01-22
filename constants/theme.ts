@@ -1,4 +1,4 @@
-import { ThemeColors } from "@/types/theme";
+import { ThemeColors } from "@/ui/theme/types";
 
 export const DarkColors: ThemeColors = {
     background: '#1e1e1e',

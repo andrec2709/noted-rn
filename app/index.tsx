@@ -1,11 +1,10 @@
 import ListIcon from "@/components/icons/ListIcon";
 import NoteIcon from "@/components/icons/NoteIcon";
 import HeaderMain from "@/components/layout/HeaderMain";
-import ItemPreview from "@/components/ui/ItemPreview";
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { useNotes } from "@/contexts/NotesProvider";
 import { useSelection } from "@/contexts/SelectionProvider";
-import { Payload } from "@/types/notes";
+import { Payload } from "@/domain/notes/types";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -14,11 +13,11 @@ import Animated, { useAnimatedRef } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Sortable, { SortableGridDragEndParams, SortableGridRenderItem } from "react-native-sortables";
 import Svg, { Path } from "react-native-svg";
-import Debugger from "@/components/ui/Debugger";
 import { useLanguage } from "@/contexts/LanguageProvider";
 import NotePreview from "@/components/ui/NotePreview";
 import ListPreview from "@/components/ui/ListPreview";
-import { useCreateNote, useSorter } from "@/db/temp";
+import { useCreateNote } from "@/application/notes/useCreateNote";
+import { useSorter } from "@/application/notes/useSorter";
 
 export default function Index() {
   const router = useRouter();

@@ -1,72 +1,9 @@
 import { truncateDecimals } from "@/utils";
-import sqliteDb, { SQLiteDbStarter } from ".";
+import sqliteDb from "../../../db/SQLiteDbStarter";
+import { ISorter } from "./ISorter";
+import { ISorterRepository } from "@/db/sorter/ISorterRepository";
+import { SQLiteSorterRepository } from "@/db/sorter/SQLiteSorterRepository";
 
-type SortOrderType = {
-    id: string;
-    sort_order: number;
-};
-
-export interface ISorter {
-    moveAfter(targetId: string, afterId: string): Promise<void>;
-    moveBefore(targetId: string, beforeId: string): Promise<void>;
-    create(): Promise<number>;
-    normalize(): Promise<void>;
-}
-
-interface ISorterRepository {
-    getAll(): Promise<SortOrderType[]>;
-    save(item: SortOrderType): Promise<void>;
-    saveAll(items: SortOrderType[]): Promise<void>;
-    getSortOrder(id: string): Promise<SortOrderType | null>;
-    getHighest(): Promise<SortOrderType | null>;
-    getLowest(): Promise<SortOrderType | null>;
-}
-
-export class SQLiteSorterRepository implements ISorterRepository {
-    constructor(private starter: SQLiteDbStarter) {}
-
-    async getAll(): Promise<SortOrderType[]> {
-        const items = await this.starter.db.getAllAsync<SortOrderType>(`SELECT id, sort_order FROM notes ORDER BY sort_order ASC`);
-        return items;
-    }
-
-    async save(item: SortOrderType): Promise<void> {
-        await this.starter.db.runAsync(`UPDATE notes SET sort_order = ? WHERE id = ?`, item.sort_order, item.id);
-    }
-
-    async saveAll(items: SortOrderType[]): Promise<void> {
-        await this.starter.db.withTransactionAsync(async () => {
-            for (const item of items) {
-                await this.save(item);
-            }
-        });
-    }
-
-    async getSortOrder(id: string): Promise<SortOrderType | null> {
-        const item = await this.starter.db.getFirstAsync<SortOrderType>(`SELECT id, sort_order FROM notes WHERE id = ?`, id);
-        return item;
-    }
-
-    async getHighest(): Promise<SortOrderType | null> {
-        const items = (await this.getAll()).sort((a, b) => b.sort_order - a.sort_order);
-        
-        if (items.length > 0) {
-            return items[0];
-        }
-
-        return null;
-    }
-
-    async getLowest(): Promise<SortOrderType | null> {
-        const items = (await this.getAll()).sort((a, b) => a.sort_order - b.sort_order);
-
-        if (items.length > 0) {
-            return items[0];
-        }
-
-        return null;
-    }
-}
 
 export class Sorter implements ISorter {
 

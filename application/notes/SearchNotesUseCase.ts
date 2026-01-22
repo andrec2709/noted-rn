@@ -1,16 +1,17 @@
-import { Payload, UnparsedPayload } from "@/types/notes";
-import sqliteDb, { SQLiteDbStarter } from ".";
-import payloadParser, { IPayloadParser } from "./PayloadParser";
+import { IPayloadParser } from "@/domain/notes/parser/IPayloadParser";
+import { Payload, UnparsedPayload } from "@/domain/notes/types";
+import sqliteDb, { SQLiteDbStarter } from "../../db/SQLiteDbStarter";
+import payloadParser from "../../domain/notes/parser/PayloadParser";
 
-export interface ISearcher {
+export interface ISearchNotesUseCase {
     search(value: string): Promise<Payload[]>;
 }
 
-export interface ISearcherRepository {
+export interface ISearchNotesRepository {
     getAll(): Promise<UnparsedPayload[]>; 
 }
 
-export class SQLiteSearcherRepository implements ISearcherRepository {
+export class SQLiteSearchNotesRepository implements ISearchNotesRepository {
     constructor(private starter: SQLiteDbStarter) {}
 
     async getAll(): Promise<UnparsedPayload[]> {
@@ -19,14 +20,14 @@ export class SQLiteSearcherRepository implements ISearcherRepository {
     }
 }
 
-export class Searcher implements ISearcher {
-    constructor(private repo: ISearcherRepository, private parser: IPayloadParser) {}
+export class SearchNotesUseCase implements ISearchNotesUseCase {
+    constructor(private repo: ISearchNotesRepository, private parser: IPayloadParser) {}
     
     async search(value: string): Promise<Payload[]> {
         const notes = await this.repo.getAll();
         const parsedNotes: Payload[] = [];
         const matchedNotes: Payload[] = [];
-        const regex = new RegExp(value.trim().replaceAll(/\s|,/gi, '|'), 'gi');
+        const regex = new RegExp(value.trim().replaceAll(/\s|,/gi, '|'), 'i');
         
         for (const note of notes) {
             const parsed = this.parser.parse(note);
@@ -62,8 +63,8 @@ export class Searcher implements ISearcher {
     }
 }
 
-const searcherRepo = new SQLiteSearcherRepository(sqliteDb);
+const searcherRepo = new SQLiteSearchNotesRepository(sqliteDb);
 
-export const searcher = new Searcher(searcherRepo, payloadParser);
+export const searcher = new SearchNotesUseCase(searcherRepo, payloadParser);
 
 export default searcher;

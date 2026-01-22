@@ -1,4 +1,4 @@
-import { Payload } from "@/types/notes";
+import { Payload } from "@/domain/notes/types";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type SelectionContextType = {

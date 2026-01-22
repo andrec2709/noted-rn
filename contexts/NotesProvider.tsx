@@ -1,8 +1,9 @@
 import React, { createContext, RefObject, useContext, useEffect, useRef, useState } from "react";
-import { ListContentType, ListItemType, NoteContentType, Payload } from "@/types/notes";
-import { AppState } from "react-native";
+import { ListContentType, NoteContentType, Payload } from "@/domain/notes/types";
 import { useAppState } from "./AppStateProvider";
-import { useGetAllNotes, useNoteRepository, useSaveNote } from "@/db/temp";
+import { useGetAllNotes } from "@/application/notes/useGetAllNotes";
+import { useNoteRepository } from "@/application/notes/useNoteRepository";
+import { useSaveNote } from "@/application/notes/useSaveNote";
 
 type NotesContextType = {
     notes: Payload[];

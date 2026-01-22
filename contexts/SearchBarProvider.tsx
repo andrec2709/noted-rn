@@ -1,11 +1,11 @@
-import { ISearcher } from "@/db/Searcher";
-import { useSearch } from "@/db/temp";
+import { ISearchNotesUseCase } from "@/application/notes/SearchNotesUseCase";
+import { useSearch } from "@/application/notes/useSearch";
 import { createContext, useContext, useState } from "react";
 
 type SearchBarContextType = {
     isSearchBarOpen: boolean;
     setIsSearchBarOpen: (newState: boolean) => void;
-    searcher: ISearcher;    
+    searcher: ISearchNotesUseCase;    
 }
 
 const SearchBarContext = createContext<SearchBarContextType | undefined>(undefined);
