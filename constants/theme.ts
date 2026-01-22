@@ -3,7 +3,7 @@ import { ThemeColors } from "@/ui/theme/types";
 export const DarkColors: ThemeColors = {
     background: '#1e1e1e',
     backgroundContainer: '#292929',
-    deleteIcon: '#ae0000',
+    deleteIcon: '#db0707',
     noteBackground: '#191919',
     noteChecked: '#0fe1f5',
     onBackground: '#dedede',
@@ -14,6 +14,7 @@ export const DarkColors: ThemeColors = {
     toolbarActive: '#0fe1f5',
     link: '#0099ffff',
     blockQuoteBorder: '#3b65d8ff',
+    backdrop: '#000000',
 
 }
 
@@ -32,5 +33,6 @@ export const LightColors: ThemeColors = {
     toolbarActive: '#3cb679',
     link: '#003cffff',
     blockQuoteBorder: '#3b65d8ff',
+    backdrop: '#919191',
 
 }

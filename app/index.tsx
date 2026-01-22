@@ -7,10 +7,10 @@ import { useSelection } from "@/contexts/SelectionProvider";
 import { NoteType, Payload } from "@/domain/notes/types";
 import { Href, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { BackHandler, NativeEventSubscription, StyleSheet, Text, View } from "react-native";
+import { BackHandler, Modal, NativeEventSubscription, Pressable, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, { useAnimatedRef, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Sortable, { SortableGridDragEndParams, SortableGridRenderItem } from "react-native-sortables";
 import { useLanguage } from "@/contexts/LanguageProvider";
 import NotePreview from "@/components/ui/NotePreview";
@@ -32,6 +32,7 @@ export default function Index() {
   const createNote = useCreateNote();
   const sorter = useSorter();
   const { isSearchBarOpen } = useSearchBar();
+  const insets = useSafeAreaInsets();
 
   const AnimatedAddButton = Animated.createAnimatedComponent(AddButton);
   const rotation = useSharedValue(0);
@@ -130,83 +131,108 @@ export default function Index() {
   }, [isAdding]);
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      style={{
-        flex: 1,
-        backgroundColor: Colors.background,
-      }}
-    >
-      <HeaderMain />
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Animated.ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 140, paddingHorizontal: 5 }}>
-          <Sortable.Grid
-            columns={1}
-            rowGap={5}
-            data={notes}
-            renderItem={renderItem}
-            overDrag='vertical'
-            activeItemScale={1.05}
-            dragActivationDelay={0}
-            scrollableRef={scrollRef}
-            customHandle
-            onDragEnd={handleDragEnd}
-          />
-        </Animated.ScrollView>
-        {
-          // Displays FAB if not in selection mode
-          (!isSelecting && !isSearchBarOpen) && (
-            <View
-              style={styles.addContainer}
-            >
+    <>
+      <SafeAreaView
+        edges={['top']}
+        style={{
+          flex: 1,
+          backgroundColor: Colors.background,
+        }}
+      >
+        <HeaderMain />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Animated.ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 140, paddingHorizontal: 5 }}>
+            <Sortable.Grid
+              columns={1}
+              rowGap={5}
+              data={notes}
+              renderItem={renderItem}
+              overDrag='vertical'
+              activeItemScale={1.05}
+              dragActivationDelay={0}
+              scrollableRef={scrollRef}
+              customHandle
+              onDragEnd={handleDragEnd}
+            />
+          </Animated.ScrollView>
+          {/* <Debugger /> */}
+        </GestureHandlerRootView>
+      </SafeAreaView>
+      {
+        isAdding && (
+          <Pressable
+            onPress={resetAddingState}
+            style={[
+              styles.backdrop,
+              { backgroundColor: Colors.backdrop },
+            ]}
+          >
+          </Pressable>
+        )
+      }
+      {
+        // Displays FAB if not in selection mode
+        (!isSelecting && !isSearchBarOpen) && (
+          <View
+            style={[
+              styles.addContainer,
               {
-                // Displays options when user is adding
-                isAdding && (
-                  <Animated.View
-                    style={[
-                      styles.optContainer,
-                      {
-                        bottom,
-                        opacity
-                      }
-                    ]}>
-                    <AddButtonOpt text={i18n.t('addList')} Icon={ListIcon} onPress={() => handleAdd('list')} />
-                    <AddButtonOpt text={i18n.t('addNote')} Icon={NoteIcon} onPress={() => handleAdd('note')} />
-                  </Animated.View>
-                )
+                bottom: insets.bottom + 40,
+                right: insets.right + 20,
               }
-              <AnimatedAddButton
-                onPress={() => {
-                  rotation.value = rotation.value === 0 ? withTiming(90, { duration: 150 }) : withTiming(0, { duration: 150 });
-                  bottom.value = bottom.value === -50 ? withTiming(0, { duration: 150 }) : withTiming(-50, { duration: 150 });
-                  opacity.value = opacity.value === 0 ? withTiming(100, { duration: 150 }) : withTiming(0, { duration: 150 });
+            ]}
+          >
+            {
+              // Displays options when user is adding
+              isAdding && (
+                <Animated.View
+                  style={[
+                    styles.optContainer,
+                    {
+                      bottom,
+                      opacity
+                    }
+                  ]}>
+                  <AddButtonOpt text={i18n.t('addList')} Icon={ListIcon} onPress={() => handleAdd('list')} />
+                  <AddButtonOpt text={i18n.t('addNote')} Icon={NoteIcon} onPress={() => handleAdd('note')} />
+                </Animated.View>
+              )
+            }
+            <AnimatedAddButton
+              onPress={() => {
+                rotation.value = rotation.value === 0 ? withTiming(90, { duration: 150 }) : withTiming(0, { duration: 150 });
+                bottom.value = bottom.value === -50 ? withTiming(0, { duration: 150 }) : withTiming(-50, { duration: 150 });
+                opacity.value = opacity.value === 0 ? withTiming(100, { duration: 150 }) : withTiming(0, { duration: 150 });
 
+                requestAnimationFrame(() => {
                   requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                      setIsAdding(!isAdding);
-                    });
+                    setIsAdding(!isAdding);
                   });
-                }}
-                style={animatedStyleAddButton}
-              />
-            </View>
-          )
-        }
-        {/* <Debugger /> */}
-      </GestureHandlerRootView>
-    </SafeAreaView>
+                });
+              }}
+              style={animatedStyleAddButton}
+            />
+          </View>
+        )
+      }
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   addContainer: {
     position: 'absolute',
-    bottom: 50,
-    right: 30,
     rowGap: 30,
   },
   optContainer: {
     rowGap: 10,
     position: 'relative',
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    height: '100%',
+    opacity: .4,
   },
 });

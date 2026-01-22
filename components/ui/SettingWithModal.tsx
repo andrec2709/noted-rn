@@ -66,6 +66,7 @@ export default function SettingWithModal({ name, description, opts }: Props) {
                 visible={modalVisible}
                 animationType="slide"
                 transparent
+                onRequestClose={e => setModalVisible(false)}
             >
                 <View style={[styles.modalContainer, {}]}>
                     <View style={[

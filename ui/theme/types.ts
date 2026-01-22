@@ -16,4 +16,5 @@ export type ThemeColors = {
     toolbarActive: ColorValue;
     link: ColorValue;
     blockQuoteBorder: ColorValue;
+    backdrop: ColorValue;
 };
