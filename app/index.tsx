@@ -22,18 +22,29 @@ import AddButton from "@/components/ui/AddButton";
 import AddButtonOpt from "@/components/ui/AddButtonOpt";
 
 export default function Index() {
-  const router = useRouter();
+  /*
+  Contexts 
+  */
+  const { notes, reload, setActiveNote } = useNotes();
   const { Colors } = useNotedTheme();
   const { i18n } = useLanguage();
-  const scrollRef = useAnimatedRef<Animated.ScrollView>()
-  const { notes, reload, setActiveNote } = useNotes();
   const { isSelecting } = useSelection();
-  const [isAdding, setIsAdding] = useState(false);
+  const { isSearchBarOpen, setIsSearchBarOpen } = useSearchBar();
+
+  /* 
+  Use cases / hooks
+  */
+  const router = useRouter();
   const createNote = useCreateNote();
   const sorter = useSorter();
-  const { isSearchBarOpen, setIsSearchBarOpen } = useSearchBar();
   const insets = useSafeAreaInsets();
 
+  const scrollRef = useAnimatedRef<Animated.ScrollView>()
+  const [isAdding, setIsAdding] = useState(false);
+
+  /* 
+  For animation of the add button and its options.
+  */
   const AnimatedAddButton = Animated.createAnimatedComponent(AddButton);
   const rotation = useSharedValue(0);
   const bottom = useSharedValue(-50);
@@ -42,6 +53,9 @@ export default function Index() {
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
+  /**
+   * Resets the animations and state of the add button.
+   */
   const resetAddingState = () => {
     setIsAdding(false);
     rotation.value = withTiming(0, { duration: 150 });
@@ -49,6 +63,14 @@ export default function Index() {
     bottom.value = withTiming(-50, { duration: 150 });
   };
 
+  /**
+   * @function
+   * Passed as a callback for a useFocusEffect.
+   * 
+   * Reloads the notes' data when the screen is focused.
+   * 
+   * On blur, resets animations and state of the add button (by calling {@link resetAddingState}), and closes the search bar if it is opened.
+   */
   const handleScreenFocus = useCallback(() => {
     reload();
 
@@ -60,6 +82,10 @@ export default function Index() {
 
   useFocusEffect(handleScreenFocus);
 
+  /**
+   * @function
+   * Determines how the data of the sortable grid is to be rendered.
+   */
   const renderItem = useCallback<SortableGridRenderItem<Payload>>(
     ({ item }) => {
       switch (item.type) {
@@ -71,6 +97,16 @@ export default function Index() {
     }
     , []);
 
+
+  /**
+   * @function
+   * Callback called when the onDragEnd event is called by {@link Sortable.Grid}.
+   * 
+   * This function uses the {@link useSorter} use case by passing its intent to reorder items.
+   * 
+   * @param params Parameters passed as {@link SortableGridDragEndParams}.
+   * @returns 
+   */
   const handleDragEnd = async ({ key, fromIndex, toIndex, indexToKey, keyToIndex, data }: SortableGridDragEndParams<Payload>) => {
     const isSingle = data.length === 1;
 
@@ -92,6 +128,14 @@ export default function Index() {
     await reload();
   };
 
+  /**
+   * @function
+   * This function passes its intent to create a new note by using the {@link useCreateNote} use case.
+   * 
+   * If creation is successful, it navigates to the relevant screen.
+   * 
+   * @param type type of note to be created (as defined in {@link NoteType})
+   */
   const handleAdd = async (type: NoteType) => {
     let newNote;
     let route: Href;
@@ -113,6 +157,14 @@ export default function Index() {
     }
   };
 
+  /**
+   * @function
+   * This function resets state of the add button when the user presses the "back" hardware (effectively "closing" the add button options).
+   * 
+   * It is used as an event handler for {@link BackHandler.addEventListener} "hardwareBackPress" event.
+   * 
+   * @returns always returns true as this return value tells BackHandler to stop bubbling up events.
+   */
   const handleGoBack = () => {
     resetAddingState();
     return true;
@@ -121,6 +173,10 @@ export default function Index() {
   useEffect(() => {
     let subscription: NativeEventSubscription;
     if (isAdding) {
+      /* 
+      This event is only added when the user has activated the add button (displaying its options).
+      It is a way to make it possible to press the back hardware to close the add button options.
+      */
       subscription = BackHandler.addEventListener('hardwareBackPress', handleGoBack);
     }
 
@@ -193,7 +249,8 @@ export default function Index() {
                       bottom,
                       opacity
                     }
-                  ]}>
+                  ]}
+                >
                   <AddButtonOpt text={i18n.t('addList')} Icon={ListIcon} onPress={() => handleAdd('list')} />
                   <AddButtonOpt text={i18n.t('addNote')} Icon={NoteIcon} onPress={() => handleAdd('note')} />
                 </Animated.View>

@@ -25,6 +25,7 @@ import UnorderedListIcon from "@/components/icons/UnorderedListIcon";
 import H2Icon from "@/components/icons/H2Icon";
 import BlockQuoteIcon from "@/components/icons/BlockQuoteIcon";
 import { useSaveNote } from "@/application/notes/useSaveNote";
+import ToolbarButton from "@/components/ui/ToolbarButton";
 
 
 export default function NoteScreen() {
@@ -39,7 +40,6 @@ export default function NoteScreen() {
     const htmlStyle: HtmlStyle = {
         h1: {
             bold: true,
-
         },
         h2: {
             bold: true
@@ -61,6 +61,9 @@ export default function NoteScreen() {
         },
     };
 
+    /*
+    htmlValue and titleValue are initializers for the Enriched text input and the title text input default values.
+    */
     const [htmlValue, setHtmlValue] = useState(activeNoteRef.current?.content.html);
     const [titleValue, setTitleValue] = useState(activeNoteRef.current?.title);
 
@@ -68,7 +71,10 @@ export default function NoteScreen() {
     const [stylesState, setStylesState] = useState<OnChangeStateEvent | null>();
     const ks = useKeyboardState();
 
-    const handleChangeText = async () => {
+    /**
+     * Persists the data from activeNoteRef.current
+     */
+    const handleSave = async () => {
         const active = activeNoteRef.current;
         if (active && active.type === 'note') {
             const html = active.content.html;
@@ -77,13 +83,20 @@ export default function NoteScreen() {
                 plainText: active.content.plainText,
             };
 
-            await save({...active, content: content});
+            await save({ ...active, content: content });
         }
     };
 
-
-    const debouncedHandleChangeText = useMemo(() => debounce(handleChangeText, 500), []);
-    useFocusEffect(useCallback(() => { return () => { handleChangeText(); } }, []));
+    /**
+     * Debounced version of {@link handleSave} (only executes after the user has not typed for X ms).
+     * Helps with performance
+     */
+    const debouncedHandleSave = useMemo(() => debounce(handleSave, 500), []);
+    
+    /* 
+    Makes sure handleSave() runs when user leaves the screen.
+    */
+    useFocusEffect(useCallback(() => { return () => { handleSave(); } }, []));
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -100,7 +113,7 @@ export default function NoteScreen() {
                 defaultValue={titleValue}
                 onChangeText={text => {
                     if (activeNoteRef.current && activeNoteRef.current.type === 'note') activeNoteRef.current.title = text;
-                    debouncedHandleChangeText();
+                    debouncedHandleSave();
                 }}
             >
             </TextInput>
@@ -108,7 +121,7 @@ export default function NoteScreen() {
                 ref={ref}
                 onChangeState={e => {
                     setStylesState(e.nativeEvent);
-                    debouncedHandleChangeText();
+                    debouncedHandleSave();
                 }}
                 style={{ ...styles.input, color: Colors.onBackground }}
                 htmlStyle={htmlStyle}
@@ -120,14 +133,14 @@ export default function NoteScreen() {
                         activeNoteRef.current.content.plainText = e.nativeEvent.value;
 
                     }
-                    debouncedHandleChangeText();
+                    debouncedHandleSave();
                 }}
                 onChangeHtml={e => {
                     if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
                         activeNoteRef.current.content.html = e.nativeEvent.value;
 
                     }
-                    debouncedHandleChangeText();
+                    debouncedHandleSave();
                 }}
             />
 
@@ -138,82 +151,55 @@ export default function NoteScreen() {
                 showsHorizontalScrollIndicator={false}
                 overScrollMode="never"
             >
-                <Pressable
-                    style={[
-                        styles.toolbarButton,
-                    ]}
+                <ToolbarButton
+                    Icon={H1Icon}
+                    color={stylesState?.isH1 ? Colors.toolbarActive : Colors.onBackgroundContainer}
                     onPress={() => ref.current?.toggleH1()}
-                >
-                    <H1Icon color={stylesState?.isH1 ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
-                <Pressable
-                    style={[
-                        styles.toolbarButton,
-                    ]}
+                />
+                <ToolbarButton
+                    Icon={H2Icon}
+                    color={stylesState?.isH2 ? Colors.toolbarActive : Colors.onBackgroundContainer}
                     onPress={() => ref.current?.toggleH2()}
-                >
-                    <H2Icon color={stylesState?.isH2 ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
-                <Pressable
-                    style={[
-                        styles.toolbarButton
-                    ]}
+                />
+                <ToolbarButton
+                    Icon={BoldIcon}
+                    color={stylesState?.isBold ? Colors.toolbarActive : Colors.onBackgroundContainer}
                     onPress={() => ref.current?.toggleBold()}
-                >
-                    <BoldIcon color={stylesState?.isBold ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
-                <Pressable
-                    style={[
-                        styles.toolbarButton
-                    ]}
+                />
+                <ToolbarButton
+                    Icon={UnderlineIcon}
+                    color={stylesState?.isUnderline ? Colors.toolbarActive : Colors.onBackgroundContainer}
                     onPress={() => ref.current?.toggleUnderline()}
-                >
-                    <UnderlineIcon color={stylesState?.isUnderline ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
-                <Pressable
-                    style={[
-                        styles.toolbarButton
-                    ]}
+                />
+                <ToolbarButton
+                    Icon={ItalicIcon}
+                    color={stylesState?.isItalic ? Colors.toolbarActive : Colors.onBackgroundContainer}
                     onPress={() => ref.current?.toggleItalic()}
-                >
-                    <ItalicIcon color={stylesState?.isItalic ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
-                <Pressable
-                    style={[
-                        styles.toolbarButton
-                    ]}
+                />
+                <ToolbarButton
+                    Icon={FormatClearIcon}
+                    color={Colors.onBackgroundContainer}
                     onPress={() => {
                         if (stylesState?.isBold) ref.current?.toggleBold();
                         if (stylesState?.isUnderline) ref.current?.toggleUnderline();
                         if (stylesState?.isItalic) ref.current?.toggleItalic();
                     }}
-                >
-                    <FormatClearIcon color={Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
-                <Pressable
+                />
+                <ToolbarButton
+                    Icon={OrderedListIcon}
+                    color={stylesState?.isOrderedList ? Colors.toolbarActive : Colors.onBackgroundContainer}
                     onPress={() => ref.current?.toggleOrderedList()}
-                    style={[
-                        styles.toolbarButton
-                    ]}
-                >
-                    <OrderedListIcon color={stylesState?.isOrderedList ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
-                <Pressable
+                />
+                <ToolbarButton
+                    Icon={UnorderedListIcon}
+                    color={stylesState?.isUnorderedList ? Colors.toolbarActive : Colors.onBackgroundContainer}
                     onPress={() => ref.current?.toggleUnorderedList()}
-                    style={[
-                        styles.toolbarButton
-                    ]}
-                >
-                    <UnorderedListIcon color={stylesState?.isUnorderedList ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
-                <Pressable
+                />
+                <ToolbarButton
+                    Icon={BlockQuoteIcon}
+                    color={stylesState?.isBlockQuote ? Colors.toolbarActive : Colors.onBackgroundContainer}
                     onPress={() => ref.current?.toggleBlockQuote()}
-                    style={[
-                        styles.toolbarButton
-                    ]}
-                >
-                    <BlockQuoteIcon color={stylesState?.isBlockQuote ? Colors.toolbarActive : Colors.onBackgroundContainer} size={24} style={{ alignSelf: 'center' }} />
-                </Pressable>
+                />
             </ScrollView>
         </SafeAreaView>
     )
@@ -243,12 +229,4 @@ const styles = StyleSheet.create({
         columnGap: 20,
         paddingHorizontal: 20
     },
-    toolbarButton: {
-        padding: 10,
-        aspectRatio: 1,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-
-    }
 });

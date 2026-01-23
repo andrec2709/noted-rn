@@ -1,8 +1,8 @@
 import 'react-native-get-random-values';
 import ListItem from '@/components/ui/ListItem';
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Sortable, { SortableGridRenderItem } from 'react-native-sortables';
+import Sortable, { SortableGridDragEndParams, SortableGridRenderItem } from 'react-native-sortables';
 import { GestureHandlerRootView, TextInput } from "react-native-gesture-handler";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Animated, { useAnimatedRef } from "react-native-reanimated";
@@ -20,20 +20,32 @@ import { useSaveNote } from '@/application/notes/useSaveNote';
 
 
 export default function ListScreen() {
+    /*
+    Contexts
+    */
     const { activeNoteRef, setSelectedListItem } = useNotes();
     const { Colors } = useNotedTheme();
     const { i18n } = useLanguage();
+    
+    /* 
+    Use cases / hooks
+    */    
     const save = useSaveNote();
+    const ks = useKeyboardState();
+
+    /* Makes sure active note is of 'list' type */
     if (activeNoteRef.current && activeNoteRef.current.type !== 'list') return null;
 
     const [isCheckedItemsOpen, setIsCheckedItemsOpen] = useState(true);
     const [submitVersion, setSubmitVersion] = useState(0);
-    const ks = useKeyboardState();
-
     const [data, setData] = useState(activeNoteRef.current?.content.items);
     const checkedItemCount = data?.filter(item => item.checked).length;
-
     const scrollRef = useAnimatedRef<Animated.ScrollView>();
+
+    /**
+     * @function
+     * Determines how items of a {@link Sortable.Grid} are rendered.
+     */
     const renderItem = useCallback<SortableGridRenderItem<ListItemType>>(
         ({ item }) => {
             return <ListItem
@@ -44,10 +56,10 @@ export default function ListScreen() {
                 onPress={handleChangeState}
                 onChangeText={handleChangeText}
                 onSubmit={() => setSubmitVersion(prev => prev + 1)}
+                key={item.id}
             />
-        },
-        []
-    )
+        }, []
+    );
 
     useEffect(() => {
         if (submitVersion > 0) {
@@ -55,8 +67,15 @@ export default function ListScreen() {
         }
     }, [submitVersion]);
 
+    /**
+     * @function
+     * This function changes the state of a list item, and determines the next item to focus.
+     * @param id list item id
+     * @param state the new state of the item (checked/unchecked).
+     * @returns 
+     */
     const handleChangeState = (id: string, state: boolean) => {
-
+        Keyboard.dismiss();
         const active = activeNoteRef.current;
         if (!active || active.type !== 'list') return;
 
@@ -67,13 +86,16 @@ export default function ListScreen() {
             const deletedIndex = filtered.findLastIndex(item => item.id === id);
             const filterSize = filtered.length;
             if (filterSize > 0 && deletedIndex !== -1) {
-                console.log('................');
+
                 if (deletedIndex === 0 && filterSize > 1) {
                     setSelectedListItem(filtered[1].id);
+                    console.log('.')
                 } else if (deletedIndex === filterSize - 1 && filterSize > 1) {
                     setSelectedListItem(filtered[filterSize - 2].id);
+                    console.log('..')
                 } else if (deletedIndex < filterSize - 1 && deletedIndex > 0) {
                     setSelectedListItem(filtered[deletedIndex - 1].id);
+                    console.log('...')
                 }
             }
         }
@@ -88,6 +110,10 @@ export default function ListScreen() {
         });
     };
 
+    /**
+     * @function
+     * Adds an empty list item and focuses it.
+     */
     const handleAddItem = () => {
         const id = uuidv4();
         const item: ListItemType = {
@@ -107,6 +133,12 @@ export default function ListScreen() {
         setSelectedListItem(id);
     };
 
+    /**
+     * Deletes a list item, and determines the next item to receive focus.
+     * @param id list item id
+     * @param checked state of the list item
+     * @returns 
+     */
     const handleDeleteItem = (id: string, checked: boolean) => {
 
         const active = activeNoteRef.current;
@@ -119,7 +151,7 @@ export default function ListScreen() {
             const deletedIndex = filtered.findLastIndex(item => item.id === id);
             const filterSize = filtered.length;
             if (filterSize > 0 && deletedIndex !== -1) {
-                console.log('................');
+
                 if (deletedIndex === 0 && filterSize > 1) {
                     setSelectedListItem(filtered[1].id);
                 } else if (deletedIndex === filterSize - 1 && filterSize > 1) {
@@ -171,6 +203,66 @@ export default function ListScreen() {
             };
 
             save({ ...active, content: content });
+        }
+    };
+
+    const handleDragEnd = ({ key, fromIndex, toIndex, indexToKey, keyToIndex, data }: SortableGridDragEndParams<ListItemType>, checked: boolean) => {
+        // TODO: Optimize this function
+        if (toIndex === 0) {
+            setData(prev => {
+                const newData = prev?.slice();
+                const firstIndex = newData?.findIndex(item => item.checked === checked);
+                const targetIndex = newData?.findIndex(item => item.id === key);
+
+                if (firstIndex !== undefined && targetIndex !== undefined && newData) {
+                    console.log(firstIndex, newData[firstIndex]);
+                    console.log(targetIndex, newData[targetIndex]);
+
+                    const target = newData.splice(targetIndex, 1);
+                    newData.splice(firstIndex, 0, target[0]);
+                    return newData;
+                }
+
+
+                return prev;
+            });
+        } else if (toIndex === data.length - 1) {
+            setData(prev => {
+                const newData = prev?.slice();
+                const lastIndex = newData?.findLastIndex(item => item.checked === checked);
+                const targetIndex = newData?.findIndex(item => item.id === key);
+
+                if (lastIndex !== undefined && targetIndex !== undefined && newData) {
+                    console.log(lastIndex, newData[lastIndex]);
+                    console.log(targetIndex, newData[targetIndex]);
+
+                    const target = newData.splice(targetIndex, 1);
+                    newData.splice(lastIndex + 1, 0, target[0]);
+                    return newData;
+                }
+
+
+                return prev;
+            });
+        } else {
+            setData(prev => {
+                const newData = prev?.slice();
+                const beforeId = indexToKey[keyToIndex[key] - 1];
+                const beforeIndex = newData?.findIndex(item => item.id === beforeId);
+                const targetIndex = newData?.findIndex(item => item.id === key);
+
+                if (beforeIndex !== undefined && targetIndex !== undefined && newData) {
+                    console.log(beforeIndex, newData[beforeIndex]);
+                    console.log(targetIndex, newData[targetIndex]);
+
+                    const target = newData.splice(targetIndex, 1);
+                    newData.splice(beforeIndex + 1, 0, target[0]);
+                    return newData;
+                }
+
+
+                return prev;
+            });
         }
     };
 
@@ -231,12 +323,13 @@ export default function ListScreen() {
                     <Sortable.Grid
                         columns={1}
                         renderItem={renderItem}
-                        data={data?.filter(item => !item.checked)!}
+                        data={data?.filter(item => !item.checked) || []}
                         overDrag="vertical"
                         customHandle
                         activeItemScale={1.05}
                         dragActivationDelay={0}
                         scrollableRef={scrollRef}
+                        onDragEnd={({ ...params }) => handleDragEnd({ ...params }, false)}
                     />
                     <Pressable
                         style={{ flexDirection: 'row', alignItems: 'center', columnGap: 10, marginTop: 20, marginLeft: 15 }}
@@ -256,12 +349,13 @@ export default function ListScreen() {
                         <Sortable.Grid
                             columns={1}
                             renderItem={renderItem}
-                            data={data?.filter(item => item.checked)!}
+                            data={data?.filter(item => item.checked) || []}
                             overDrag="vertical"
                             customHandle
                             activeItemScale={1.05}
                             dragActivationDelay={0}
                             scrollableRef={scrollRef}
+                            onDragEnd={({ ...params }) => handleDragEnd({ ...params }, true)}
                         />
                     )}
                 </Animated.ScrollView>

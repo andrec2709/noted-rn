@@ -1,10 +1,10 @@
 import { ThemeColors } from "@/ui/theme/types";
 
 export const DarkColors: ThemeColors = {
-    background: '#1e1e1e',
+    background: '#111111',
     backgroundContainer: '#292929',
     deleteIcon: '#db0707',
-    noteBackground: '#191919',
+    noteBackground: '#1a1a1a',
     noteChecked: '#0fe1f5',
     onBackground: '#dedede',
     onBackgroundContainer: '#dedede',
@@ -22,7 +22,6 @@ export const LightColors: ThemeColors = {
     background: '#dadada',
     backgroundContainer: '#c8c8c8',
     deleteIcon: '#ae0000',
-    // noteBackground: '#c2c2c2ff',
     noteBackground: '#dadada',
     noteChecked: '#3cb679',
     onBackground: '#1b1b1b',

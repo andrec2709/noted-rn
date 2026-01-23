@@ -1,6 +1,6 @@
 import { useNotes } from "@/contexts/NotesProvider";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Keyboard, StyleSheet, TextInput, View } from "react-native";
 import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
@@ -21,11 +21,29 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
     const { selectedListItem, setSelectedListItem } = useNotes();
     const { Colors } = useNotedTheme();
     const [checked, setChecked] = useState(isChecked);
+    const submittingRef = useRef(false);
 
     const handlePress = () => {
         setChecked(!checked);
         Keyboard.dismiss();
         onPress(id, !checked);
+    };
+
+    /**
+     * This function is used to avoid duplicate events triggered by a hardware keyboard.
+     * 
+     * @returns 
+     */
+    const onSubmitSafe = () => {
+        
+        if (submittingRef.current) return;
+        submittingRef.current = true;
+
+        onSubmit();
+
+        setTimeout(() => {
+            submittingRef.current = false;
+        }, 100);
     };
 
     return (
@@ -63,7 +81,7 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
                     submitBehavior="submit"
                     onChangeText={text => onChangeText(text, id)}
                     onFocus={() => setSelectedListItem(id)}
-                    onSubmitEditing={onSubmit}
+                    onSubmitEditing={onSubmitSafe}
 
                 />
                 <Ionicons
