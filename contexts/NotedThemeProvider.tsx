@@ -24,7 +24,6 @@ export const useNotedTheme = () => {
 
 export const NotedThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const prefColorScheme = useColorScheme();
-    // const [theme, setTheme] = useState<Theme>(prefColorScheme ?? 'light');
     const [theme, setTheme] = useState<Theme>(prefColorScheme ?? 'light');
     const Colors: ThemeColors = theme === 'light' ? LightColors : DarkColors;
 

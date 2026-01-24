@@ -23,15 +23,30 @@ export default function ListPreview({
     payload,
 }: Props
 ) {
+    /* 
+    Contexts
+    */
     const { isSelecting, setIsSelecting, setSelectionBuffer } = useSelection();
     const { i18n } = useLanguage();
     const { isSearchBarOpen } = useSearchBar();
     const { setActiveNote } = useNotes();
     const { Colors } = useNotedTheme();
+
+    /*
+    Use cases / hooks
+    */
     const getById = useGetNoteById();
-    const [checked, setChecked] = useState(false);
     const router = useRouter();
 
+    /* 
+    Others
+    */
+    const [checked, setChecked] = useState(false);
+
+    /**
+     * @function
+     * Handles whether or not this preview is selected (when in selection mode)
+     */
     const handlePress = () => {
         if (checked) {
             setSelectionBuffer(prev => prev.filter(nt => nt.id !== payload.id));
@@ -43,11 +58,9 @@ export default function ListPreview({
     };
 
     useEffect(() => {
-
         if (!isSelecting) {
             setChecked(false);
         }
-
     }, [isSelecting]);
 
     return (

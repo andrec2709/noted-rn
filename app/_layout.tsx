@@ -5,7 +5,6 @@ import { NotesProvider } from "@/contexts/NotesProvider";
 import { SearchBarProvider } from "@/contexts/SearchBarProvider";
 import { SelectionProvider } from "@/contexts/SelectionProvider";
 import sqliteDb from "@/db/SQLiteDbStarter";
-import { getLocales } from "expo-localization";
 import { SplashScreen, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -18,9 +17,13 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  /* Determines whether or not the splash screen can be hidden */
   const [isReady, setIsReady] = useState(false);
-  console.log(getLocales()[0].languageCode)
+  
   useEffect(() => {
+    /**
+     * Makes sure SQLite db is initialized before hiding the splash screen
+     */
     async function initAsync() {
       try {
         await sqliteDb.initDb();

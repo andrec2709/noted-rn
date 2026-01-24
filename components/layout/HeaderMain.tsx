@@ -14,16 +14,28 @@ import { Payload } from "@/domain/notes/types";
 import Animated, { useSharedValue, withTiming } from "react-native-reanimated";
 
 export default function HeaderMain() {
+    /* 
+    Contexts
+    */
     const { Colors } = useNotedTheme();
     const { isSelecting, setIsSelecting, selectionBuffer, setSelectionBuffer } = useSelection();
     const { deleteNotes, reload, changeNotes } = useNotes();
     const { isSearchBarOpen, setIsSearchBarOpen, searcher } = useSearchBar();
     const { i18n } = useLanguage();
+    
+    /* 
+    Hooks
+    */
     const router = useRouter();
+
+    /* Used for animation of the search bar */
     const width = useSharedValue<`${number}%`>('0%');
 
     /**
-     *  Reloads data on main screen with notes that match the search term 
+     *  Reloads data on main screen with notes that match the search term.
+     * 
+     * This function is debounced ({@link debouncedHandleChangeText}) in order to improve performance.
+     * 
      * @param text The search term typed by the user
      * */
     const handleChangeText = async (text: string) => {
@@ -33,6 +45,13 @@ export default function HeaderMain() {
 
     const debouncedHandleChangeText = useMemo(() => debounce(handleChangeText, 350), [handleChangeText]);
 
+    /**
+     * This function is used as the event handler for the BackHandler 'hardwareBackPress' event listener.
+     * 
+     * This is used to change the behavior of the back button when the search bar is open (it effectively closes the search bar).
+     * 
+     * @returns always returns true to avoid events bubbling up.
+     */
     const handleGoBack = () => {
         setIsSearchBarOpen(false);
         return true;

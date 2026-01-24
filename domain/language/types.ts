@@ -2,7 +2,7 @@
 export type Language = 'pt-BR' | 'en';
 
 /**
- * Defined the keys for translation
+ * Defines the keys for translation
  */
 export type Translation = {
     placeholderTitle: string;

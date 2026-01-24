@@ -30,19 +30,19 @@ export class PayloadParser implements IPayloadParser {
         return {...payload, content: JSON.stringify(payload.content)};
     }
 
-    parseContent(content: string) {
+    parseContent(content: string): ContentType | null {
         const parsed: ContentType = JSON.parse(content);
 
         if (this.isNoteContent(parsed)) {
-            return parsed as NoteContentType;
+            return parsed;
         } else if (this.isListContent(parsed)) {
-            return parsed as ListContentType;
+            return parsed;
         }
 
         return null;
     }
 
-    unparseContent(content: ContentType) {
+    unparseContent(content: ContentType): string | null {
         if (this.isNoteContent(content) || this.isListContent(content)) {
             return JSON.stringify(content);
         }

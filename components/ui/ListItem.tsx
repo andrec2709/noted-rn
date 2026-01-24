@@ -18,11 +18,21 @@ type Props = {
 };
 
 export default function ListItem({ isChecked, content, onDelete, id, onPress, onChangeText, onSubmit }: Props) {
+    /* 
+    Contexts
+    */
     const { selectedListItem, setSelectedListItem } = useNotes();
     const { Colors } = useNotedTheme();
+
     const [checked, setChecked] = useState(isChecked);
+    
+    /* only used inside the onSubmitSafe function, to determine whether or not onSubmit can be called */
     const submittingRef = useRef(false);
 
+    /**
+     * @function
+     * Called when the user presses the checkbox
+     */
     const handlePress = () => {
         setChecked(!checked);
         Keyboard.dismiss();
@@ -30,8 +40,10 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
     };
 
     /**
+     * @function
      * This function is used to avoid duplicate events triggered by a hardware keyboard.
      * 
+     * Without this, onSubmit will cause two new list items to be inserted instead of one (see 'submitVersion' in /app/list/index.tsx).
      * @returns 
      */
     const onSubmitSafe = () => {

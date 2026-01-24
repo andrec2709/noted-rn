@@ -18,7 +18,10 @@ import { useLanguage } from '@/contexts/LanguageProvider';
 import HeaderGeneric from '@/components/layout/HeaderGeneric';
 import { useSaveNote } from '@/application/notes/useSaveNote';
 
-
+/**
+ * 
+ * @returns 
+ */
 export default function ListScreen() {
     /*
     Contexts
@@ -37,9 +40,19 @@ export default function ListScreen() {
     if (activeNoteRef.current && activeNoteRef.current.type !== 'list') return null;
 
     const [isCheckedItemsOpen, setIsCheckedItemsOpen] = useState(true);
+
+    /* 
+    This state is used as a 'signal' when the user submits inside the TextInput of a <ListItem>.
+    Whenever submitVersion changes, a useEffect executes handleAddItem, which adds a new list item.
+    */
     const [submitVersion, setSubmitVersion] = useState(0);
+
+    /* Data of the active list */
     const [data, setData] = useState(activeNoteRef.current?.content.items);
+
+    /* the displayed count of checked / completed items */
     const checkedItemCount = data?.filter(item => item.checked).length;
+
     const scrollRef = useAnimatedRef<Animated.ScrollView>();
 
     /**
@@ -61,6 +74,10 @@ export default function ListScreen() {
         }, []
     );
 
+    /* 
+    Whenever submitVersion changes, this useEffect adds a new list item. 
+    the submitVersion > 0 condition makes sure it does not add a new one on mount.
+    */
     useEffect(() => {
         if (submitVersion > 0) {
             handleAddItem()
@@ -169,6 +186,13 @@ export default function ListScreen() {
 
     };
 
+    /**
+     * @function
+     * Executes when the text content of a list item changes, and updates the data.
+     * 
+     * @param text new text content
+     * @param id list item id
+     */
     const handleChangeText = (text: string, id: string) => {
         setData(prev => {
             const newData = prev?.map(item => {
@@ -182,6 +206,12 @@ export default function ListScreen() {
         });
     };
 
+    /**
+     * @function
+     * Executes when the title text content changes.
+     * 
+     * This function is debounced ({@link debouncedHandleChangeTitle}) in order to improve performance.
+     */
     const handleChangeTitle = async () => {
         const active = activeNoteRef.current;
 
@@ -194,6 +224,11 @@ export default function ListScreen() {
         }
     };
 
+    /**
+     * Executes whenever the 'data' state changes. It updates the data of the active list.
+     * 
+     * This function is debounced ({@link debouncedHandleUpdateList}) in order to improve performance.
+     */
     const handleUpdateList = async () => {
         const active = activeNoteRef.current;
 
@@ -206,6 +241,13 @@ export default function ListScreen() {
         }
     };
 
+    /**
+     * @function
+     * Function used as an event handler for the onDragEnd event of a {@link Sortable.Grid}.
+     * 
+     * @param params parameters as defined by {@link SortableGridDragEndParams}
+     * @param checked this parameter is used to pinpoint if the event was triggered by the sortable grid of 'checked' or 'unchecked' items.
+     */
     const handleDragEnd = ({ key, fromIndex, toIndex, indexToKey, keyToIndex, data }: SortableGridDragEndParams<ListItemType>, checked: boolean) => {
         // TODO: Optimize this function
         if (toIndex === 0) {
@@ -269,6 +311,9 @@ export default function ListScreen() {
     const debouncedHandleUpdateList = useMemo(() => debounce(handleUpdateList, 500), []);
     const debouncedHandleChangeTitle = useMemo(() => debounce(handleChangeTitle, 500), []);
 
+    /* 
+    Makes sure content is saved when the route gets out of focus.
+    */
     useFocusEffect(useCallback(() => {
 
         return () => {
@@ -286,6 +331,9 @@ export default function ListScreen() {
 
     }, []));
 
+    /* 
+    Keeps activeNoteRef.current in sync with the data state.
+    */
     useEffect(() => {
         if (data && activeNoteRef.current && activeNoteRef.current.type === 'list') activeNoteRef.current.content.items = data;
         debouncedHandleUpdateList();

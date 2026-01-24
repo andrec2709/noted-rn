@@ -39,12 +39,10 @@ export default function Index() {
   const sorter = useSorter();
   const insets = useSafeAreaInsets();
 
-  const scrollRef = useAnimatedRef<Animated.ScrollView>()
-  const [isAdding, setIsAdding] = useState(false);
-
   /* 
-  For animation of the add button and its options.
+  Animation / state of the add button and its options.
   */
+  const [isAdding, setIsAdding] = useState(false);
   const AnimatedAddButton = Animated.createAnimatedComponent(AddButton);
   const rotation = useSharedValue(0);
   const bottom = useSharedValue(-50);
@@ -52,6 +50,11 @@ export default function Index() {
   const animatedStyleAddButton = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
+
+  /* 
+  Others 
+  */
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
 
   /**
    * Resets the animations and state of the add button.

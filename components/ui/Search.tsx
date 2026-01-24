@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Search() {
+function Search() {
     
     
     return (

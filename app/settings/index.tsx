@@ -7,6 +7,9 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
+    /* 
+    Contexts
+    */
     const { Colors, changeTheme } = useNotedTheme();
     const { i18n, changeLanguage } = useLanguage();
 

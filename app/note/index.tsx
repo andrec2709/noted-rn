@@ -29,9 +29,16 @@ import ToolbarButton from "@/components/ui/ToolbarButton";
 
 
 export default function NoteScreen() {
+    /*
+    Contexts
+    */
     const { activeNoteRef } = useNotes();
     const { i18n } = useLanguage();
     const { Colors } = useNotedTheme();
+    
+    /* 
+    Use cases
+    */
     const save = useSaveNote();
 
 
@@ -88,7 +95,7 @@ export default function NoteScreen() {
     };
 
     /**
-     * Debounced version of {@link handleSave} (only executes after the user has not typed for X ms).
+     * Debounced version of {@link handleSave}.
      * Helps with performance
      */
     const debouncedHandleSave = useMemo(() => debounce(handleSave, 500), []);
