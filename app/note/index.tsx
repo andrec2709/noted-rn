@@ -35,7 +35,7 @@ export default function NoteScreen() {
     const { activeNoteRef } = useNotes();
     const { i18n } = useLanguage();
     const { Colors } = useNotedTheme();
-    
+
     /* 
     Use cases
     */
@@ -75,6 +75,7 @@ export default function NoteScreen() {
     const [titleValue, setTitleValue] = useState(activeNoteRef.current?.title);
 
     const ref = useRef<EnrichedTextInputInstance>(null);
+    const scrollRef = useRef<ScrollView>(null);
     const [stylesState, setStylesState] = useState<OnChangeStateEvent | null>();
     const ks = useKeyboardState();
 
@@ -99,7 +100,7 @@ export default function NoteScreen() {
      * Helps with performance
      */
     const debouncedHandleSave = useMemo(() => debounce(handleSave, 500), []);
-    
+
     /* 
     Makes sure handleSave() runs when user leaves the screen.
     */
@@ -108,49 +109,59 @@ export default function NoteScreen() {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
             <HeaderGeneric />
-            <TextInput
-                style={{
-                    fontSize: 25,
-                    height: 'auto',
-                    color: Colors.onBackground,
-                    fontFamily: 'Inter'
-                }}
-                placeholder={i18n.t('placeholderTitle')}
-                placeholderTextColor={Colors.onBackground}
-                defaultValue={titleValue}
-                onChangeText={text => {
-                    if (activeNoteRef.current && activeNoteRef.current.type === 'note') activeNoteRef.current.title = text;
-                    debouncedHandleSave();
-                }}
+            <ScrollView
+                ref={scrollRef}
+                style={{flex: 1}}
             >
-            </TextInput>
-            <EnrichedTextInput
-                ref={ref}
-                onChangeState={e => {
-                    setStylesState(e.nativeEvent);
-                    debouncedHandleSave();
-                }}
-                style={{ ...styles.input, color: Colors.onBackground }}
-                htmlStyle={htmlStyle}
-                placeholder={i18n.t('placeholderEditor')}
-                placeholderTextColor={Colors.onBackground}
-                defaultValue={htmlValue}
-                onChangeText={e => {
-                    if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
-                        activeNoteRef.current.content.plainText = e.nativeEvent.value;
+                <TextInput
+                    style={{
+                        fontSize: 25,
+                        height: 'auto',
+                        color: Colors.onBackground,
+                        fontFamily: 'Inter'
+                    }}
+                    placeholder={i18n.t('placeholderTitle')}
+                    placeholderTextColor={Colors.onBackground}
+                    defaultValue={titleValue}
+                    multiline
+                    textBreakStrategy="highQuality"    
+                    submitBehavior="submit"
+                    scrollEnabled={false}
+                    onChangeText={text => {
+                        if (activeNoteRef.current && activeNoteRef.current.type === 'note') activeNoteRef.current.title = text;
+                        debouncedHandleSave();
+                    }}
+                    onSubmitEditing={() => { ref.current?.focus(); scrollRef.current?.scrollToEnd();}}
+                >
+                </TextInput>
+                <EnrichedTextInput
+                    ref={ref}
+                    onChangeState={e => {
+                        setStylesState(e.nativeEvent);
+                        debouncedHandleSave();
+                    }}
+                    style={{ ...styles.input, color: Colors.onBackground }}
+                    htmlStyle={htmlStyle}
+                    placeholder={i18n.t('placeholderEditor')}
+                    placeholderTextColor={Colors.onBackground}
+                    defaultValue={htmlValue}
+                    scrollEnabled={false}
+                    onChangeText={e => {
+                        if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
+                            activeNoteRef.current.content.plainText = e.nativeEvent.value;
 
-                    }
-                    debouncedHandleSave();
-                }}
-                onChangeHtml={e => {
-                    if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
-                        activeNoteRef.current.content.html = e.nativeEvent.value;
+                        }
+                        debouncedHandleSave();
+                    }}
+                    onChangeHtml={e => {
+                        if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
+                            activeNoteRef.current.content.html = e.nativeEvent.value;
 
-                    }
-                    debouncedHandleSave();
-                }}
-            />
-
+                        }
+                        debouncedHandleSave();
+                    }}
+                />
+            </ScrollView>
             <ScrollView
                 style={[styles.toolbar, { marginBottom: ks.height, backgroundColor: Colors.backgroundContainer }]}
                 contentContainerStyle={styles.toolbarContent}
@@ -218,10 +229,10 @@ const styles = StyleSheet.create({
     },
     input: {
         width: '100%',
-        fontSize: 20,
+        fontSize: 18,
         padding: 10,
         flex: 1,
-        fontFamily: 'Inter'
+        fontFamily: 'Inter',
 
     },
     toolbar: {
