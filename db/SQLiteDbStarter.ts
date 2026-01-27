@@ -5,7 +5,7 @@ import { IDbStarter } from './IDbStarter';
 
 export class SQLiteDbStarter implements IDbStarter {
   private static instance: SQLiteDbStarter | undefined;
-  db: SQLite.SQLiteDatabase = SQLite.openDatabaseSync('notes.db');
+  readonly db: SQLite.SQLiteDatabase = SQLite.openDatabaseSync('notes.db');
 
   private constructor() {
     this.initDb();
