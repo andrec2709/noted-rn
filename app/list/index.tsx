@@ -17,6 +17,7 @@ import { useNotedTheme } from '@/contexts/NotedThemeProvider';
 import { useLanguage } from '@/contexts/LanguageProvider';
 import HeaderGeneric from '@/components/layout/HeaderGeneric';
 import { useSaveNote } from '@/application/notes/useSaveNote';
+import { useChecklist } from '@/contexts/ActiveChecklistProvider';
 
 /**
  * 
@@ -26,18 +27,15 @@ export default function ListScreen() {
     /*
     Contexts
     */
-    const { activeNoteRef, setSelectedListItem } = useNotes();
+    const { activeListRef, setSelectedListItem } = useChecklist();
     const { Colors } = useNotedTheme();
     const { i18n } = useLanguage();
-    
+
     /* 
     Use cases / hooks
-    */    
+    */
     const save = useSaveNote();
     const ks = useKeyboardState();
-
-    /* Makes sure active note is of 'list' type */
-    if (activeNoteRef.current && activeNoteRef.current.type !== 'list') return null;
 
     const [isCheckedItemsOpen, setIsCheckedItemsOpen] = useState(true);
 
@@ -48,7 +46,7 @@ export default function ListScreen() {
     const [submitVersion, setSubmitVersion] = useState(0);
 
     /* Data of the active list */
-    const [data, setData] = useState(activeNoteRef.current?.content.items);
+    const [data, setData] = useState(activeListRef.current?.content.items);
 
     /* the displayed count of checked / completed items */
     const checkedItemCount = data?.filter(item => item.checked).length;
@@ -93,8 +91,8 @@ export default function ListScreen() {
      */
     const handleChangeState = (id: string, state: boolean) => {
         Keyboard.dismiss();
-        const active = activeNoteRef.current;
-        if (!active || active.type !== 'list') return;
+        const active = activeListRef.current;
+        if (!active) return;
 
         const contentItems = active.content.items;
 
@@ -106,13 +104,10 @@ export default function ListScreen() {
 
                 if (deletedIndex === 0 && filterSize > 1) {
                     setSelectedListItem(filtered[1].id);
-                    console.log('.')
                 } else if (deletedIndex === filterSize - 1 && filterSize > 1) {
                     setSelectedListItem(filtered[filterSize - 2].id);
-                    console.log('..')
                 } else if (deletedIndex < filterSize - 1 && deletedIndex > 0) {
                     setSelectedListItem(filtered[deletedIndex - 1].id);
-                    console.log('...')
                 }
             }
         }
@@ -158,8 +153,9 @@ export default function ListScreen() {
      */
     const handleDeleteItem = (id: string, checked: boolean) => {
 
-        const active = activeNoteRef.current;
-        if (!active || active.type !== 'list') return;
+        const active = activeListRef.current;
+
+        if (!active) return;
 
         const contentItems = active.content.items;
 
@@ -213,14 +209,14 @@ export default function ListScreen() {
      * This function is debounced ({@link debouncedHandleChangeTitle}) in order to improve performance.
      */
     const handleChangeTitle = async () => {
-        const active = activeNoteRef.current;
+        const active = activeListRef.current;
 
-        if (active && active.type === 'list') {
+        if (active) {
             const content: ListContentType = {
                 items: active.content.items,
             };
 
-            save({ ...active, content: content });
+            save({ ...active, content });
         }
     };
 
@@ -230,14 +226,14 @@ export default function ListScreen() {
      * This function is debounced ({@link debouncedHandleUpdateList}) in order to improve performance.
      */
     const handleUpdateList = async () => {
-        const active = activeNoteRef.current;
+        const active = activeListRef.current;
 
-        if (active && active.type === 'list') {
+        if (active) {
             const content: ListContentType = {
                 items: active.content.items,
             };
 
-            save({ ...active, content: content });
+            save({ ...active, content });
         }
     };
 
@@ -318,13 +314,13 @@ export default function ListScreen() {
 
         return () => {
             setSelectedListItem('');
-            const active = activeNoteRef.current;
-            if (active && active.type === 'list') {
+            const active = activeListRef.current;
+            if (active) {
                 const content: ListContentType = {
                     items: active.content.items,
                 };
 
-                save({ ...active, content: content });
+                save({ ...active, content });
 
             }
         };
@@ -335,9 +331,11 @@ export default function ListScreen() {
     Keeps activeNoteRef.current in sync with the data state.
     */
     useEffect(() => {
-        if (data && activeNoteRef.current && activeNoteRef.current.type === 'list') activeNoteRef.current.content.items = data;
+        if (data && activeListRef.current) activeListRef.current.content.items = data;
         debouncedHandleUpdateList();
     }, [data]);
+
+    if (!activeListRef.current) return null;
 
     return (
         <SafeAreaView style={{
@@ -360,9 +358,9 @@ export default function ListScreen() {
                         ]}
                         placeholder={i18n.t('placeholderTitle')}
                         placeholderTextColor={Colors.onBackground}
-                        defaultValue={activeNoteRef.current?.title || ''}
+                        defaultValue={activeListRef.current?.title ?? ''}
                         onChangeText={text => {
-                            if (activeNoteRef.current) activeNoteRef.current.title = text;
+                            if (activeListRef.current) activeListRef.current.title = text;
                             debouncedHandleChangeTitle();
                         }}
 

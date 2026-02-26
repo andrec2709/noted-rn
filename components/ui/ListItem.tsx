@@ -6,6 +6,7 @@ import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
 import Checkbox from "./Checkbox";
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
+import { useChecklist } from "@/contexts/ActiveChecklistProvider";
 
 type Props = {
     isChecked: boolean;
@@ -21,11 +22,11 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
     /* 
     Contexts
     */
-    const { selectedListItem, setSelectedListItem } = useNotes();
+    const { selectedListItem, setSelectedListItem } = useChecklist();
     const { Colors } = useNotedTheme();
 
     const [checked, setChecked] = useState(isChecked);
-    
+
     /* only used inside the onSubmitSafe function, to determine whether or not onSubmit can be called */
     const submittingRef = useRef(false);
 
@@ -47,7 +48,7 @@ export default function ListItem({ isChecked, content, onDelete, id, onPress, on
      * @returns 
      */
     const onSubmitSafe = () => {
-        
+
         if (submittingRef.current) return;
         submittingRef.current = true;
 

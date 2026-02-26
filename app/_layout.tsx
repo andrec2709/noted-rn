@@ -1,3 +1,5 @@
+import { ActiveChecklistProvider } from "@/contexts/ActiveChecklistProvider";
+import { ActiveNoteProvider } from "@/contexts/ActiveNoteProvider";
 import { AppStateProvider } from "@/contexts/AppStateProvider";
 import { LanguageProvider } from "@/contexts/LanguageProvider";
 import { NotedThemeProvider } from "@/contexts/NotedThemeProvider";
@@ -19,7 +21,7 @@ export const unstable_settings = {
 export default function RootLayout() {
   /* Determines whether or not the splash screen can be hidden */
   const [isReady, setIsReady] = useState(false);
-  
+
   useEffect(() => {
     /**
      * Makes sure SQLite db is initialized before hiding the splash screen
@@ -52,24 +54,28 @@ export default function RootLayout() {
               <SearchBarProvider>
                 <NotesProvider>
                   <SelectionProvider>
-                    <Stack>
-                      <Stack.Screen
-                        name="index"
-                        options={{ headerShown: false }}
-                      />
-                      <Stack.Screen
-                        name="note/index"
-                        options={{ title: '', headerShown: false }}
-                      />
-                      <Stack.Screen
-                        name="list/index"
-                        options={{ title: '', headerShown: false }}
-                      />
-                      <Stack.Screen 
-                        name="settings/index"
-                        options={{ title: '', headerShown: false }}
-                      />
-                    </Stack>
+                    <ActiveChecklistProvider>
+                      <ActiveNoteProvider>
+                        <Stack>
+                          <Stack.Screen
+                            name="index"
+                            options={{ headerShown: false }}
+                          />
+                          <Stack.Screen
+                            name="note/index"
+                            options={{ title: '', headerShown: false }}
+                          />
+                          <Stack.Screen
+                            name="list/index"
+                            options={{ title: '', headerShown: false }}
+                          />
+                          <Stack.Screen
+                            name="settings/index"
+                            options={{ title: '', headerShown: false }}
+                          />
+                        </Stack>
+                      </ActiveNoteProvider>
+                    </ActiveChecklistProvider>
                   </SelectionProvider>
                 </NotesProvider>
               </SearchBarProvider>

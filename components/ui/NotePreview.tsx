@@ -12,6 +12,7 @@ import Sortable from "react-native-sortables";
 import DragIcon from "../icons/DragIcon";
 import { useGetNoteById } from "@/application/notes/useGetNoteById";
 import { NotePayload } from "@/domain/notes/types";
+import { useNote } from "@/contexts/ActiveNoteProvider";
 
 type Props = {
     payload: NotePayload;
@@ -26,7 +27,7 @@ export default function NotePreview({
     */
     const { isSelecting, setIsSelecting, setSelectionBuffer } = useSelection();
     const { isSearchBarOpen } = useSearchBar();
-    const { setActiveNote } = useNotes();
+    const { activeNoteRef } = useNote();
     const { Colors } = useNotedTheme();
 
     /*
@@ -71,9 +72,9 @@ export default function NotePreview({
                 if (isSelecting) {
                     handlePress();
                 } else {
-                    const note = await getById(payload.id);
+                    const note = await getById(payload.id) as NotePayload | null;
                     if (!note) return;
-                    setActiveNote(note);
+                    activeNoteRef.current = note;
                     router.navigate('./note');
                 }
             }}

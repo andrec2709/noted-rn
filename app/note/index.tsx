@@ -26,13 +26,15 @@ import H2Icon from "@/components/icons/H2Icon";
 import BlockQuoteIcon from "@/components/icons/BlockQuoteIcon";
 import { useSaveNote } from "@/application/notes/useSaveNote";
 import ToolbarButton from "@/components/ui/ToolbarButton";
-
+import { useNote } from "@/contexts/ActiveNoteProvider";
+import sanitizeHtml from 'sanitize-html';
+import { convert } from 'html-to-text';
 
 export default function NoteScreen() {
     /*
     Contexts
     */
-    const { activeNoteRef } = useNotes();
+    const { activeNoteRef } = useNote();
     const { i18n } = useLanguage();
     const { Colors } = useNotedTheme();
 
@@ -42,7 +44,6 @@ export default function NoteScreen() {
     const save = useSaveNote();
 
 
-    if (activeNoteRef.current && activeNoteRef.current.type !== 'note') return null;
 
     const htmlStyle: HtmlStyle = {
         h1: {
@@ -84,11 +85,16 @@ export default function NoteScreen() {
      */
     const handleSave = async () => {
         const active = activeNoteRef.current;
-        if (active && active.type === 'note') {
-            const html = active.content.html;
+        if (active) {
+            
+            const html = sanitizeHtml(active.content.html, {
+                allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'html' ]),
+            });
+            
+            const plainText = convert(html);
             const content: NoteContentType = {
-                html: html,
-                plainText: active.content.plainText,
+                html,
+                plainText,
             };
 
             await save({ ...active, content: content });
@@ -106,12 +112,14 @@ export default function NoteScreen() {
     */
     useFocusEffect(useCallback(() => { return () => { handleSave(); } }, []));
 
+    if (!activeNoteRef.current) return null;
+
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
             <HeaderGeneric />
             <ScrollView
                 ref={scrollRef}
-                style={{flex: 1}}
+                style={{ flex: 1 }}
             >
                 <TextInput
                     style={{
@@ -124,14 +132,14 @@ export default function NoteScreen() {
                     placeholderTextColor={Colors.onBackground}
                     defaultValue={titleValue}
                     multiline
-                    textBreakStrategy="highQuality"    
+                    textBreakStrategy="highQuality"
                     submitBehavior="submit"
                     scrollEnabled={false}
                     onChangeText={text => {
-                        if (activeNoteRef.current && activeNoteRef.current.type === 'note') activeNoteRef.current.title = text;
+                        if (activeNoteRef.current) activeNoteRef.current.title = text;
                         debouncedHandleSave();
                     }}
-                    onSubmitEditing={() => { ref.current?.focus(); scrollRef.current?.scrollToEnd();}}
+                    onSubmitEditing={() => { ref.current?.focus(); scrollRef.current?.scrollToEnd(); }}
                 >
                 </TextInput>
                 <EnrichedTextInput
@@ -146,15 +154,16 @@ export default function NoteScreen() {
                     placeholderTextColor={Colors.onBackground}
                     defaultValue={htmlValue}
                     scrollEnabled={false}
-                    onChangeText={e => {
-                        if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
-                            activeNoteRef.current.content.plainText = e.nativeEvent.value;
+                    // onChangeText={e => {
+                    //     if (activeNoteRef.current) {
+                    //         activeNoteRef.current.content.plainText = e.nativeEvent.value;
 
-                        }
-                        debouncedHandleSave();
-                    }}
+                    //     }
+                    //     debouncedHandleSave();
+                    // }}
                     onChangeHtml={e => {
-                        if (activeNoteRef.current && activeNoteRef.current.type === 'note') {
+                        console.log(e.nativeEvent.value);
+                        if (activeNoteRef.current) {
                             activeNoteRef.current.content.html = e.nativeEvent.value;
 
                         }

@@ -4,7 +4,7 @@ import HeaderMain from "@/components/layout/HeaderMain";
 import { useNotedTheme } from "@/contexts/NotedThemeProvider";
 import { useNotes } from "@/contexts/NotesProvider";
 import { useSelection } from "@/contexts/SelectionProvider";
-import { NoteType, Payload } from "@/domain/notes/types";
+import { ListPayload, NotePayload, NoteType, Payload } from "@/domain/notes/types";
 import { Href, useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { BackHandler, Modal, NativeEventSubscription, Pressable, StyleSheet, Text, View } from "react-native";
@@ -20,12 +20,16 @@ import { useSorter } from "@/application/notes/useSorter";
 import { useSearchBar } from "@/contexts/SearchBarProvider";
 import AddButton from "@/components/ui/AddButton";
 import AddButtonOpt from "@/components/ui/AddButtonOpt";
+import { useChecklist } from "@/contexts/ActiveChecklistProvider";
+import { useNote } from "@/contexts/ActiveNoteProvider";
 
 export default function Index() {
   /*
   Contexts 
   */
-  const { notes, reload, setActiveNote } = useNotes();
+  const { notes, reload } = useNotes();
+  const { activeNoteRef } = useNote();
+  const { activeListRef } = useChecklist();
   const { Colors } = useNotedTheme();
   const { i18n } = useLanguage();
   const { isSelecting } = useSelection();
@@ -131,33 +135,45 @@ export default function Index() {
     await reload();
   };
 
-  /**
-   * @function
-   * This function passes its intent to create a new note by using the {@link useCreateNote} use case.
-   * 
-   * If creation is successful, it navigates to the relevant screen.
-   * 
-   * @param type type of note to be created (as defined in {@link NoteType})
-   */
-  const handleAdd = async (type: NoteType) => {
-    let newNote;
-    let route: Href;
+  // /**
+  //  * @function
+  //  * This function passes its intent to create a new note by using the {@link useCreateNote} use case.
+  //  * 
+  //  * If creation is successful, it navigates to the relevant screen.
+  //  * 
+  //  * @param type type of note to be created (as defined in {@link NoteType})
+  //  */
+  // const handleAdd = async (type: NoteType) => {
+  //   let newNote;
+  //   let route: Href;
 
-    switch (type) {
-      case 'note':
-        newNote = await createNote('', { html: '', plainText: '' }, 'note');
-        route = './note';
-        break;
-      case 'list':
-        newNote = await createNote('', { items: [] }, 'list');
-        route = './list';
-        break;
-    }
+  //   switch (type) {
+  //     case 'note':
+  //       newNote = await createNote('', { html: '', plainText: '' }, 'note');
+  //       route = './note';
+  //       break;
+  //     case 'list':
+  //       newNote = await createNote('', { items: [] }, 'list');
+  //       route = './list';
+  //       break;
+  //   }
 
-    if (newNote) {
-      setActiveNote(newNote);
-      router.navigate(route);
-    }
+  //   if (newNote) {
+  //     setActiveNote(newNote);
+  //     router.navigate(route);
+  //   }
+  // };
+
+  const handleAddChecklist = async () => {
+    const newList = await createNote('', { items: [] }, 'list') as ListPayload;
+    activeListRef.current = newList;
+    router.navigate('./list');
+  }
+
+  const handleAddNote = async () => {
+    const newNote = await createNote('', { html: '', plainText: '' }, 'note') as NotePayload;
+    activeNoteRef.current = newNote;
+    router.navigate('./note');
   };
 
   /**
@@ -254,8 +270,8 @@ export default function Index() {
                     }
                   ]}
                 >
-                  <AddButtonOpt text={i18n.t('addList')} Icon={ListIcon} onPress={() => handleAdd('list')} />
-                  <AddButtonOpt text={i18n.t('addNote')} Icon={NoteIcon} onPress={() => handleAdd('note')} />
+                  <AddButtonOpt text={i18n.t('addList')} Icon={ListIcon} onPress={handleAddChecklist} />
+                  <AddButtonOpt text={i18n.t('addNote')} Icon={NoteIcon} onPress={handleAddNote} />
                 </Animated.View>
               )
             }

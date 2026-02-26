@@ -14,6 +14,7 @@ import DragIcon from "../icons/DragIcon";
 import ListIcon from "../icons/ListIcon";
 import { useLanguage } from "@/contexts/LanguageProvider";
 import { useGetNoteById } from "@/application/notes/useGetNoteById";
+import { useChecklist } from "@/contexts/ActiveChecklistProvider";
 
 type Props = {
     payload: ListPayload;
@@ -27,9 +28,9 @@ export default function ListPreview({
     Contexts
     */
     const { isSelecting, setIsSelecting, setSelectionBuffer } = useSelection();
+    const { activeListRef } = useChecklist();
     const { i18n } = useLanguage();
     const { isSearchBarOpen } = useSearchBar();
-    const { setActiveNote } = useNotes();
     const { Colors } = useNotedTheme();
 
     /*
@@ -74,9 +75,10 @@ export default function ListPreview({
                 if (isSelecting) {
                     handlePress();
                 } else {
-                    const note = await getById(payload.id);
+                    const note = await getById(payload.id) as ListPayload | null;
                     if (!note) return;
-                    setActiveNote(note);
+                    activeListRef.current = note;
+
                     router.navigate('./list');
                 }
             }}
