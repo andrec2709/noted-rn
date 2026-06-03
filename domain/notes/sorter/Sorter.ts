@@ -15,7 +15,6 @@ export class Sorter implements ISorter {
     constructor(private repo: ISorterRepository) {}
 
     async normalize(): Promise<void> {
-        console.log('HERE___normalizer()')
         const notes = await this.repo.getAll();
         let value = this.NORMALIZATION_BASE;
         let sentinelValue = -9999;

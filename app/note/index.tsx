@@ -71,8 +71,14 @@ export default function NoteScreen() {
 
     /*
     htmlValue and titleValue are initializers for the Enriched text input and the title text input default values.
+    .trim() on htmlValue is important, because Enriched breaks if there is a newline of whitespace
+    outside the <html> tag boundary. E.g.: \n<html>...</html> will break the note.
     */
-    const [htmlValue, setHtmlValue] = useState(activeNoteRef.current?.content.html);
+
+    const [htmlValue, setHtmlValue] = useState(() => sanitizeHtml(
+        activeNoteRef.current?.content.html.trim() ?? '', 
+        {allowedTags: sanitizeHtml.defaults.allowedTags.concat(['html'])}
+    ));
     const [titleValue, setTitleValue] = useState(activeNoteRef.current?.title);
 
     const ref = useRef<EnrichedTextInputInstance>(null);
@@ -86,8 +92,10 @@ export default function NoteScreen() {
     const handleSave = async () => {
         const active = activeNoteRef.current;
         if (active) {
-            
-            const html = sanitizeHtml(active.content.html, {
+            /* .trim() here is important for the same reason it is used in 
+            htmlValue init state.
+            */
+            const html = sanitizeHtml(active.content.html.trim(), {
                 allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'html' ]),
             });
             
@@ -97,7 +105,7 @@ export default function NoteScreen() {
                 plainText,
             };
 
-            await save({ ...active, content: content });
+            await save({ ...active, content });
         }
     };
 
@@ -154,15 +162,7 @@ export default function NoteScreen() {
                     placeholderTextColor={Colors.onBackground}
                     defaultValue={htmlValue}
                     scrollEnabled={false}
-                    // onChangeText={e => {
-                    //     if (activeNoteRef.current) {
-                    //         activeNoteRef.current.content.plainText = e.nativeEvent.value;
-
-                    //     }
-                    //     debouncedHandleSave();
-                    // }}
                     onChangeHtml={e => {
-                        console.log(e.nativeEvent.value);
                         if (activeNoteRef.current) {
                             activeNoteRef.current.content.html = e.nativeEvent.value;
 

@@ -253,8 +253,6 @@ export default function ListScreen() {
                 const targetIndex = newData?.findIndex(item => item.id === key);
 
                 if (firstIndex !== undefined && targetIndex !== undefined && newData) {
-                    console.log(firstIndex, newData[firstIndex]);
-                    console.log(targetIndex, newData[targetIndex]);
 
                     const target = newData.splice(targetIndex, 1);
                     newData.splice(firstIndex, 0, target[0]);
@@ -271,9 +269,6 @@ export default function ListScreen() {
                 const targetIndex = newData?.findIndex(item => item.id === key);
 
                 if (lastIndex !== undefined && targetIndex !== undefined && newData) {
-                    console.log(lastIndex, newData[lastIndex]);
-                    console.log(targetIndex, newData[targetIndex]);
-
                     const target = newData.splice(targetIndex, 1);
                     newData.splice(lastIndex + 1, 0, target[0]);
                     return newData;
@@ -290,8 +285,6 @@ export default function ListScreen() {
                 const targetIndex = newData?.findIndex(item => item.id === key);
 
                 if (beforeIndex !== undefined && targetIndex !== undefined && newData) {
-                    console.log(beforeIndex, newData[beforeIndex]);
-                    console.log(targetIndex, newData[targetIndex]);
 
                     const target = newData.splice(targetIndex, 1);
                     newData.splice(beforeIndex + 1, 0, target[0]);

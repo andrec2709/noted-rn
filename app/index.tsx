@@ -22,6 +22,7 @@ import AddButton from "@/components/ui/AddButton";
 import AddButtonOpt from "@/components/ui/AddButtonOpt";
 import { useChecklist } from "@/contexts/ActiveChecklistProvider";
 import { useNote } from "@/contexts/ActiveNoteProvider";
+import Debugger from "@/components/ui/Debugger";
 
 export default function Index() {
   /*
@@ -292,6 +293,7 @@ export default function Index() {
           </View>
         )
       }
+      {/* <Debugger /> */}
     </>
   );
 }
